@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, Upload, Lock, Eye, EyeOff, AlertTriangle, TrendingUp, Calendar, Package, Search, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { googleSheetsService } from './google-sheets-service.js';
 
 const MACHINES = [
   { 
@@ -73,6 +74,9 @@ export default function App() {
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearConfirmText, setClearConfirmText] = useState('');
   const [toast, setToast] = useState(null); // {message, type: 'success'|'error'|'info'}
+  const [isLoadingFromSheets, setIsLoadingFromSheets] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [useGoogleSheets, setUseGoogleSheets] = useState(true); // Toggle for Google Sheets
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -101,23 +105,110 @@ export default function App() {
     return () => document.head.removeChild(style);
   }, []);
   
+  // Load data from Google Sheets on startup
   useEffect(() => {
     if (!auth) return;
-    try {
-      const stored = localStorage.getItem('orders-final');
-      if (stored) setOrders(JSON.parse(stored));
-    } catch (error) {
-      console.error('Error loading orders:', error);
-    }
-  }, [auth]);
+    
+    const loadData = async () => {
+      if (!useGoogleSheets) {
+        // Load from localStorage as fallback
+        try {
+          const stored = localStorage.getItem('orders-final');
+          if (stored) setOrders(JSON.parse(stored));
+        } catch (error) {
+          console.error('Error loading from localStorage:', error);
+        }
+        return;
+      }
 
-  const save = (data) => {
+      // Load from Google Sheets
+      setIsLoadingFromSheets(true);
+      try {
+        const data = await googleSheetsService.fetchOrders();
+        setOrders(data);
+        setLastSyncTime(new Date());
+        showToast(`Loaded ${data.length} orders from Google Sheets`, 'success');
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('orders-final', JSON.stringify(data));
+      } catch (error) {
+        console.error('Error loading from Google Sheets:', error);
+        showToast('Failed to load from Google Sheets. Using local data.', 'error');
+        
+        // Fallback to localStorage
+        try {
+          const stored = localStorage.getItem('orders-final');
+          if (stored) setOrders(JSON.parse(stored));
+        } catch (e) {
+          console.error('Error loading from localStorage:', e);
+        }
+      } finally {
+        setIsLoadingFromSheets(false);
+      }
+    };
+
+    loadData();
+  }, [auth, useGoogleSheets]);
+
+  // Auto-sync with Google Sheets every 30 seconds
+  useEffect(() => {
+    if (!auth || !useGoogleSheets) return;
+
+    const syncInterval = setInterval(async () => {
+      try {
+        const data = await googleSheetsService.fetchOrders();
+        setOrders(data);
+        setLastSyncTime(new Date());
+        localStorage.setItem('orders-final', JSON.stringify(data));
+      } catch (error) {
+        console.error('Auto-sync failed:', error);
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(syncInterval);
+  }, [auth, useGoogleSheets]);
+
+  const save = async (data) => {
     try {
+      // Always save to localStorage first (instant)
       localStorage.setItem('orders-final', JSON.stringify(data));
       setOrders(data);
+      
+      // Then save to Google Sheets if enabled
+      if (useGoogleSheets) {
+        try {
+          await googleSheetsService.saveOrders(data);
+          setLastSyncTime(new Date());
+        } catch (error) {
+          console.error('Error saving to Google Sheets:', error);
+          showToast('Saved locally but failed to sync with Google Sheets', 'error');
+        }
+      }
     } catch (error) {
       console.error('Error saving orders:', error);
       showToast('Failed to save data', 'error');
+    }
+  };
+
+  // Manual refresh from Google Sheets
+  const refreshFromSheets = async () => {
+    if (!useGoogleSheets) {
+      showToast('Google Sheets sync is disabled', 'info');
+      return;
+    }
+
+    setIsLoadingFromSheets(true);
+    try {
+      const data = await googleSheetsService.fetchOrders();
+      setOrders(data);
+      setLastSyncTime(new Date());
+      localStorage.setItem('orders-final', JSON.stringify(data));
+      showToast(`Refreshed ${data.length} orders from Google Sheets`, 'success');
+    } catch (error) {
+      console.error('Error refreshing from Google Sheets:', error);
+      showToast('Failed to refresh from Google Sheets', 'error');
+    } finally {
+      setIsLoadingFromSheets(false);
     }
   };
 
@@ -653,7 +744,25 @@ export default function App() {
               <h1 className="text-2xl font-bold">Production Tracker</h1>
               <p className="text-sm text-slate-300">Corrugated Sheet Plant Planning</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {/* Sync Status */}
+              {useGoogleSheets && lastSyncTime && (
+                <div className="text-sm text-green-300">
+                  ✓ Synced {Math.round((new Date() - lastSyncTime) / 1000)}s ago
+                </div>
+              )}
+              
+              {/* Refresh Button */}
+              {useGoogleSheets && (
+                <button 
+                  onClick={refreshFromSheets}
+                  disabled={isLoadingFromSheets}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <TrendingUp size={18} className={isLoadingFromSheets ? 'animate-spin' : ''} />
+                  {isLoadingFromSheets ? 'Syncing...' : 'Refresh'}
+                </button>
+              )}
+              
               <button onClick={() => {
                 initNewOrder();
                 setView('neworder');
