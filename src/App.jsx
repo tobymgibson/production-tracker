@@ -470,21 +470,41 @@ export default function App() {
               console.log('Processing date string:', dateStr);
               
               // Handle DD/MM/YY or DD/MM/YYYY format (e.g., "6/10/25" or "09/09/2025")
+              // Also handles M/D/YY format by assuming UK date format (day first)
               if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) {
+                  // Assume UK format: Day/Month/Year
                   let day = parts[0].padStart(2, '0');
                   let month = parts[1].padStart(2, '0');
                   let year = parts[2];
                   
-                  // Convert 2-digit year to 4-digit (25 -> 2025)
+                  // Convert 2-digit year to 4-digit (25 -> 2025, 26 -> 2026)
                   if (year.length === 2) {
-                    year = '20' + year;
+                    const yearNum = parseInt(year);
+                    // If year is 00-49, assume 2000-2049; if 50-99, assume 1950-1999
+                    if (yearNum < 50) {
+                      year = '20' + year;
+                    } else {
+                      year = '19' + year;
+                    }
+                  } else if (year.length === 4) {
+                    // Already 4 digits
+                    year = year;
                   }
                   
-                  // Convert to YYYY-MM-DD format for HTML date input
-                  planningDate = `${year}-${month}-${day}`;
-                  console.log('Converted DD/MM/YY format to:', planningDate);
+                  // Validate the date parts are reasonable
+                  const dayNum = parseInt(day);
+                  const monthNum = parseInt(month);
+                  
+                  if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12) {
+                    // Convert to YYYY-MM-DD format for HTML date input
+                    planningDate = `${year}-${month}-${day}`;
+                    console.log(`Converted ${dateStr} (D/M/Y) to:`, planningDate);
+                  } else {
+                    console.warn(`Invalid date parts: day=${day}, month=${month}, year=${year}`);
+                    planningDate = ''; // Leave blank if invalid
+                  }
                 }
               } 
               // Handle YYYY-MM-DD format (already correct)
@@ -532,21 +552,39 @@ export default function App() {
               console.log('Processing ship date string:', dateStr);
               
               // Handle DD/MM/YY or DD/MM/YYYY format (e.g., "6/10/25" or "09/09/2025")
+              // Also handles M/D/YY format by assuming UK date format (day first)
               if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
                 if (parts.length === 3) {
+                  // Assume UK format: Day/Month/Year
                   let day = parts[0].padStart(2, '0');
                   let month = parts[1].padStart(2, '0');
                   let year = parts[2];
                   
-                  // Convert 2-digit year to 4-digit (25 -> 2025)
+                  // Convert 2-digit year to 4-digit (25 -> 2025, 26 -> 2026)
                   if (year.length === 2) {
-                    year = '20' + year;
+                    const yearNum = parseInt(year);
+                    if (yearNum < 50) {
+                      year = '20' + year;
+                    } else {
+                      year = '19' + year;
+                    }
+                  } else if (year.length === 4) {
+                    year = year;
                   }
                   
-                  // Convert to YYYY-MM-DD format for HTML date input
-                  shipsDate = `${year}-${month}-${day}`;
-                  console.log('Converted ship date DD/MM/YY to:', shipsDate);
+                  // Validate the date parts
+                  const dayNum = parseInt(day);
+                  const monthNum = parseInt(month);
+                  
+                  if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12) {
+                    // Convert to YYYY-MM-DD format for HTML date input
+                    shipsDate = `${year}-${month}-${day}`;
+                    console.log(`Converted ship date ${dateStr} (D/M/Y) to:`, shipsDate);
+                  } else {
+                    console.warn(`Invalid ship date parts: day=${day}, month=${month}, year=${year}`);
+                    shipsDate = '';
+                  }
                 }
               } 
               // Handle YYYY-MM-DD format (already correct)
