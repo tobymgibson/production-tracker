@@ -124,13 +124,40 @@ export default function App() {
       // Load from Google Sheets
       setIsLoadingFromSheets(true);
       try {
-        const data = await googleSheetsService.fetchOrders();
-        setOrders(data);
-        setLastSyncTime(new Date());
-        showToast(`Loaded ${data.length} orders from Google Sheets`, 'success');
+        // First, check if we have any local data
+        let localData = [];
+        try {
+          const stored = localStorage.getItem('orders-final');
+          if (stored) localData = JSON.parse(stored);
+        } catch (e) {
+          console.error('Error reading local storage:', e);
+        }
         
-        // Also save to localStorage as backup
-        localStorage.setItem('orders-final', JSON.stringify(data));
+        const sheetData = await googleSheetsService.fetchOrders();
+        
+        // Find orders that exist locally but not in Google Sheets
+        const localOnlyOrders = localData.filter(localOrder => {
+          const existsInSheet = sheetData.some(sheetOrder => sheetOrder.id === localOrder.id);
+          return !existsInSheet;
+        });
+        
+        // Merge: Sheet data + Local-only orders
+        const mergedData = [...sheetData, ...localOnlyOrders];
+        
+        setOrders(mergedData);
+        setLastSyncTime(new Date());
+        
+        if (localOnlyOrders.length > 0) {
+          showToast(
+            `Loaded ${sheetData.length} orders from Google Sheets + ${localOnlyOrders.length} local order(s)`, 
+            'success'
+          );
+        } else {
+          showToast(`Loaded ${sheetData.length} orders from Google Sheets`, 'success');
+        }
+        
+        // Save merged data to localStorage
+        localStorage.setItem('orders-final', JSON.stringify(mergedData));
       } catch (error) {
         console.error('Error loading from Google Sheets:', error);
         showToast('Failed to load from Google Sheets. Using local data.', 'error');
@@ -151,9 +178,15 @@ export default function App() {
   }, [auth, useGoogleSheets]);
 
   // Auto-sync with Google Sheets every 30 seconds
+  // DISABLED: Since we can't write to Google Sheets (401 error), auto-sync would
+  // overwrite local changes. Users should manually click Refresh when needed.
   useEffect(() => {
     if (!auth || !useGoogleSheets) return;
 
+    // Auto-sync disabled - use manual Refresh button instead
+    // Uncomment below to re-enable auto-sync when OAuth 2.0 is implemented
+    
+    /*
     const syncInterval = setInterval(async () => {
       try {
         const data = await googleSheetsService.fetchOrders();
@@ -166,6 +199,7 @@ export default function App() {
     }, 30000); // 30 seconds
 
     return () => clearInterval(syncInterval);
+    */
   }, [auth, useGoogleSheets]);
 
   const save = async (data) => {
@@ -202,11 +236,34 @@ export default function App() {
 
     setIsLoadingFromSheets(true);
     try {
-      const data = await googleSheetsService.fetchOrders();
-      setOrders(data);
+      const sheetData = await googleSheetsService.fetchOrders();
+      
+      // Get current local data
+      const localData = orders;
+      
+      // Find orders that exist locally but not in Google Sheets
+      // These are new orders created on the website
+      const localOnlyOrders = localData.filter(localOrder => {
+        // Check if this order exists in sheet data by ID
+        const existsInSheet = sheetData.some(sheetOrder => sheetOrder.id === localOrder.id);
+        return !existsInSheet;
+      });
+      
+      // Merge: Sheet data (source of truth) + Local-only orders (new ones not yet in sheet)
+      const mergedData = [...sheetData, ...localOnlyOrders];
+      
+      setOrders(mergedData);
       setLastSyncTime(new Date());
-      localStorage.setItem('orders-final', JSON.stringify(data));
-      showToast(`Refreshed ${data.length} orders from Google Sheets`, 'success');
+      localStorage.setItem('orders-final', JSON.stringify(mergedData));
+      
+      if (localOnlyOrders.length > 0) {
+        showToast(
+          `Refreshed from Google Sheets. Kept ${localOnlyOrders.length} local order(s) not yet in sheet.`, 
+          'success'
+        );
+      } else {
+        showToast(`Refreshed ${sheetData.length} orders from Google Sheets`, 'success');
+      }
     } catch (error) {
       console.error('Error refreshing from Google Sheets:', error);
       showToast('Failed to refresh from Google Sheets', 'error');
@@ -272,9 +329,9 @@ export default function App() {
     setNewOrder(order);
   };
 
-  const saveNewOrder = () => {
+  const saveNewOrder = async () => {
     if (newOrder && newOrder.customer) {
-      save([{...newOrder, id: `${Date.now()}`}, ...orders]);
+      await save([{...newOrder, id: `${Date.now()}`}, ...orders]);
       setNewOrder(null);
       setView('active');
       showToast('Order created successfully!', 'success');
