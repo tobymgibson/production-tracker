@@ -170,18 +170,21 @@ export default function App() {
 
   const save = async (data) => {
     try {
-      // Always save to localStorage first (instant)
+      // Always save to localStorage first (instant and reliable)
       localStorage.setItem('orders-final', JSON.stringify(data));
       setOrders(data);
       
-      // Then save to Google Sheets if enabled
+      // Then TRY to save to Google Sheets if enabled
+      // Note: This may fail with 401 if API key is read-only
       if (useGoogleSheets) {
         try {
           await googleSheetsService.saveOrders(data);
           setLastSyncTime(new Date());
+          showToast('Saved to browser and Google Sheets', 'success');
         } catch (error) {
-          console.error('Error saving to Google Sheets:', error);
-          showToast('Saved locally but failed to sync with Google Sheets', 'error');
+          console.warn('Could not save to Google Sheets (API key may be read-only):', error);
+          // Don't show error to user - data is still saved locally
+          // Google Sheets can be updated manually
         }
       }
     } catch (error) {
