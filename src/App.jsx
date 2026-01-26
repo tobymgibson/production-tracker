@@ -103,14 +103,22 @@ export default function App() {
   
   useEffect(() => {
     if (!auth) return;
-    window.storage.get('orders-final').then(r => {
-      if (r?.value) setOrders(JSON.parse(r.value));
-    }).catch(() => {});
+    try {
+      const stored = localStorage.getItem('orders-final');
+      if (stored) setOrders(JSON.parse(stored));
+    } catch (error) {
+      console.error('Error loading orders:', error);
+    }
   }, [auth]);
 
-  const save = async (data) => {
-    await window.storage.set('orders-final', JSON.stringify(data));
-    setOrders(data);
+  const save = (data) => {
+    try {
+      localStorage.setItem('orders-final', JSON.stringify(data));
+      setOrders(data);
+    } catch (error) {
+      console.error('Error saving orders:', error);
+      showToast('Failed to save data', 'error');
+    }
   };
 
   const deleteOrder = (id) => {
