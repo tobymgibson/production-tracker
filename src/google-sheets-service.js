@@ -18,7 +18,7 @@ export class GoogleSheetsService {
   // Fetch all orders from Google Sheets
   async fetchOrders() {
     try {
-      const range = `${GOOGLE_SHEETS_CONFIG.sheets.orders}!A2:Z1000`; // Skip header row
+      const range = `${GOOGLE_SHEETS_CONFIG.sheets.orders}!A2:Z10000`; // Skip header row, support up to 10,000 orders
       const url = `${this.baseUrl}/${this.spreadsheetId}/values/${range}?key=${this.apiKey}`;
       
       const response = await fetch(url);
@@ -43,7 +43,18 @@ export class GoogleSheetsService {
     VALIDATIONS.forEach((v, index) => {
       const key = v.toLowerCase().replace(/\s+/g, '');
       const colIndex = 12 + index; // Validations start at column 13 (M)
-      validations[key] = row[colIndex]?.toLowerCase() === 'x';
+      const cellValue = row[colIndex];
+      
+      // Handle various formats: x, X, y, Y, yes, YES (mark as checked)
+      // Handle: n, N, no, NO, n/a, N/A, n.a, N.A (mark as unchecked/false)
+      // Empty or other values also marked as unchecked
+      if (cellValue) {
+        const val = String(cellValue).toLowerCase().trim();
+        // True if: x, y, yes
+        validations[key] = val === 'x' || val === 'y' || val === 'yes';
+      } else {
+        validations[key] = false;
+      }
     });
 
     return {
@@ -124,7 +135,7 @@ export class GoogleSheetsService {
   // Clear all order data (keep header)
   async clearSheet() {
     try {
-      const range = `${GOOGLE_SHEETS_CONFIG.sheets.orders}!A2:Z1000`;
+      const range = `${GOOGLE_SHEETS_CONFIG.sheets.orders}!A2:Z10000`;
       const url = `${this.baseUrl}/${this.spreadsheetId}/values/${range}:clear?key=${this.apiKey}`;
       
       const response = await fetch(url, {
