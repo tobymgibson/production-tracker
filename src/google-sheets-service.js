@@ -7,6 +7,57 @@ const VALIDATIONS = [
   'Formes Ordered', 'Plates Ordered'
 ];
 
+// Helper function to parse dates from Google Sheets
+function parseDate(dateStr) {
+  if (!dateStr || dateStr.trim() === '') return '';
+  
+  const str = dateStr.trim();
+  
+  // Already in YYYY-MM-DD format
+  if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return str;
+  }
+  
+  // Handle D/M/YY or DD/MM/YYYY format (UK format)
+  if (str.includes('/')) {
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      let day = parts[0].padStart(2, '0');
+      let month = parts[1].padStart(2, '0');
+      let year = parts[2];
+      
+      // Convert 2-digit year to 4-digit
+      if (year.length === 2) {
+        const yearNum = parseInt(year);
+        year = yearNum < 50 ? '20' + year : '19' + year;
+      }
+      
+      // Validate
+      const dayNum = parseInt(day);
+      const monthNum = parseInt(month);
+      
+      if (dayNum >= 1 && dayNum <= 31 && monthNum >= 1 && monthNum <= 12) {
+        return `${year}-${month}-${day}`;
+      }
+    }
+  }
+  
+  // Try to parse as a Date object
+  try {
+    const date = new Date(str);
+    if (!isNaN(date.getTime())) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  } catch (e) {
+    console.warn('Could not parse date:', str);
+  }
+  
+  return ''; // Return empty if can't parse
+}
+
 // Google Sheets API Service
 export class GoogleSheetsService {
   constructor() {
@@ -29,8 +80,14 @@ export class GoogleSheetsService {
       const data = await response.json();
       const rows = data.values || [];
       
+      console.log(`📊 Loaded ${rows.length} rows from Google Sheets`);
+      
       // Convert rows to order objects
-      return rows.map(row => this.rowToOrder(row)).filter(order => order.customer);
+      const orders = rows.map(row => this.rowToOrder(row)).filter(order => order.customer);
+      
+      console.log(`✅ Parsed ${orders.length} valid orders (with customers)`);
+      
+      return orders;
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;
@@ -45,17 +102,24 @@ export class GoogleSheetsService {
       const colIndex = 12 + index; // Validations start at column 13 (M)
       const cellValue = row[colIndex];
       
-      // Handle various formats: x, X, y, Y, yes, YES (mark as checked)
-      // Handle: n, N, no, NO, n/a, N/A, n.a, N.A (mark as unchecked/false)
-      // Empty or other values also marked as unchecked
       if (cellValue) {
         const val = String(cellValue).toLowerCase().trim();
-        // True if: x, y, yes
         validations[key] = val === 'x' || val === 'y' || val === 'yes';
       } else {
         validations[key] = false;
       }
     });
+
+    const planningDate = parseDate(row[7]);
+    const shipsDate = parseDate(row[8]);
+    
+    // Debug logging for dates
+    if (row[7] && !planningDate) {
+      console.warn(`⚠️ Could not parse planning date: "${row[7]}" for customer: ${row[1]}`);
+    }
+    if (row[8] && !shipsDate) {
+      console.warn(`⚠️ Could not parse ship date: "${row[8]}" for customer: ${row[1]}`);
+    }
 
     return {
       id: row[0] || '',
@@ -65,8 +129,8 @@ export class GoogleSheetsService {
       spec: row[4] || '',
       quantity: row[5] || '',
       status: row[6] || 'In Progress',
-      planningDate: row[7] || '',
-      shipsDate: row[8] || '',
+      planningDate: planningDate,
+      shipsDate: shipsDate,
       machineId: row[9] ? parseInt(row[9]) : null,
       notes: row[10] || '',
       created: row[11] || new Date().toISOString(),
@@ -104,6 +168,8 @@ export class GoogleSheetsService {
       // Convert orders to rows
       const rows = orders.map(order => this.orderToRow(order));
       
+      console.log(`💾 Saving ${rows.length} orders to Google Sheets...`);
+      
       // Clear existing data first (except header)
       await this.clearSheet();
       
@@ -125,6 +191,8 @@ export class GoogleSheetsService {
         throw new Error(`Failed to save orders: ${response.statusText}`);
       }
 
+      console.log(`✅ Successfully saved ${rows.length} orders to Google Sheets`);
+      
       return await response.json();
     } catch (error) {
       console.error('Error saving orders:', error);
