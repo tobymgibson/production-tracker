@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, Upload, Lock, Eye, EyeOff, AlertTriangle, TrendingUp, Calendar, Package, Search, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
-import { googleSheetsService } from './google-sheets-service.js';
+import { firebaseService } from './firebase-service.js';
 
-const MACHINES = [
+// MACHINES will be loaded from Firebase dynamically
+// Default values used as fallback
+const DEFAULT_MACHINES = [
   { 
     id: 1, 
     name: 'KO1', 
     fullName: 'Klett 1',
     capacity: 50000, 
     stockPercentage: 57,
-    availableCapacity: 21500, // 50000 * (1 - 0.57)
+    availableCapacity: 21500,
     avgSetupTime: 2 
   },
   { 
@@ -18,7 +20,7 @@ const MACHINES = [
     fullName: 'Klett 3',
     capacity: 17500, 
     stockPercentage: 22,
-    availableCapacity: 13650, // 17500 * (1 - 0.22)
+    availableCapacity: 13650,
     avgSetupTime: 1.5 
   },
   { 
@@ -27,7 +29,7 @@ const MACHINES = [
     fullName: 'Century',
     capacity: 24000, 
     stockPercentage: 45,
-    availableCapacity: 13200, // 24000 * (1 - 0.45)
+    availableCapacity: 13200,
     avgSetupTime: 1.5 
   },
   { 
@@ -36,7 +38,7 @@ const MACHINES = [
     fullName: 'Jinchang',
     capacity: 48000, 
     stockPercentage: 49,
-    availableCapacity: 24480, // 48000 * (1 - 0.49)
+    availableCapacity: 24480,
     avgSetupTime: 2 
   }
 ];
@@ -76,12 +78,17 @@ export default function App() {
   const [toast, setToast] = useState(null); // {message, type: 'success'|'error'|'info'}
   const [isLoadingFromSheets, setIsLoadingFromSheets] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
-  const [useGoogleSheets, setUseGoogleSheets] = useState(true); // Toggle for Google Sheets
+  const [useGoogleSheets, setUseGoogleSheets] = useState(false); // Disabled - using Firebase now
+  const [machines, setMachines] = useState(DEFAULT_MACHINES); // Dynamic machines from Firebase
+  const [showMigrateButton, setShowMigrateButton] = useState(false); // Show migrate from Sheets button
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
   };
+
+  // For backward compatibility - MACHINES references the dynamic machines state
+  const MACHINES = machines;
 
   // Add animation styles
   React.useEffect(() => {
@@ -105,77 +112,39 @@ export default function App() {
     return () => document.head.removeChild(style);
   }, []);
   
-  // Load data from Google Sheets on startup
+  // Load data from Firebase with real-time sync
   useEffect(() => {
     if (!auth) return;
     
-    const loadData = async () => {
-      if (!useGoogleSheets) {
-        // Load from localStorage as fallback
-        try {
-          const stored = localStorage.getItem('orders-final');
-          if (stored) setOrders(JSON.parse(stored));
-        } catch (error) {
-          console.error('Error loading from localStorage:', error);
-        }
-        return;
+    console.log('🔥 Setting up Firebase real-time sync...');
+    
+    // Subscribe to real-time order updates
+    const unsubscribeOrders = firebaseService.subscribeToOrders((ordersData) => {
+      console.log(`🔥 Real-time update: ${ordersData.length} orders`);
+      setOrders(ordersData);
+      setLastSyncTime(new Date());
+      
+      // Also save to localStorage as backup
+      localStorage.setItem('orders-final', JSON.stringify(ordersData));
+    });
+    
+    // Subscribe to real-time machine updates
+    const unsubscribeMachines = firebaseService.subscribeToMachines((machinesData) => {
+      console.log(`🔥 Real-time update: ${machinesData.length} machines`);
+      if (machinesData.length > 0) {
+        setMachines(machinesData);
       }
-
-      // Load from Google Sheets
-      setIsLoadingFromSheets(true);
-      try {
-        // First, check if we have any local data
-        let localData = [];
-        try {
-          const stored = localStorage.getItem('orders-final');
-          if (stored) localData = JSON.parse(stored);
-        } catch (e) {
-          console.error('Error reading local storage:', e);
-        }
-        
-        const sheetData = await googleSheetsService.fetchOrders();
-        
-        // Find orders that exist locally but not in Google Sheets
-        const localOnlyOrders = localData.filter(localOrder => {
-          const existsInSheet = sheetData.some(sheetOrder => sheetOrder.id === localOrder.id);
-          return !existsInSheet;
-        });
-        
-        // Merge: Sheet data + Local-only orders
-        const mergedData = [...sheetData, ...localOnlyOrders];
-        
-        setOrders(mergedData);
-        setLastSyncTime(new Date());
-        
-        if (localOnlyOrders.length > 0) {
-          showToast(
-            `Loaded ${sheetData.length} orders from Google Sheets + ${localOnlyOrders.length} local order(s)`, 
-            'success'
-          );
-        } else {
-          showToast(`Loaded ${sheetData.length} orders from Google Sheets`, 'success');
-        }
-        
-        // Save merged data to localStorage
-        localStorage.setItem('orders-final', JSON.stringify(mergedData));
-      } catch (error) {
-        console.error('Error loading from Google Sheets:', error);
-        showToast('Failed to load from Google Sheets. Using local data.', 'error');
-        
-        // Fallback to localStorage
-        try {
-          const stored = localStorage.getItem('orders-final');
-          if (stored) setOrders(JSON.parse(stored));
-        } catch (e) {
-          console.error('Error loading from localStorage:', e);
-        }
-      } finally {
-        setIsLoadingFromSheets(false);
-      }
+    });
+    
+    showToast('🔥 Connected to Firebase - Real-time sync active!', 'success');
+    
+    // Cleanup subscriptions when component unmounts
+    return () => {
+      console.log('🔥 Cleaning up Firebase subscriptions');
+      if (unsubscribeOrders) unsubscribeOrders();
+      if (unsubscribeMachines) unsubscribeMachines();
     };
-
-    loadData();
-  }, [auth, useGoogleSheets]);
+  }, [auth]);
 
   // Auto-sync with Google Sheets every 30 seconds
   // DISABLED: Since we can't write to Google Sheets (401 error), auto-sync would
@@ -204,69 +173,62 @@ export default function App() {
 
   const save = async (data) => {
     try {
-      // Always save to localStorage first (instant and reliable)
+      // Save to Firebase - all users will see the update in real-time!
+      await firebaseService.saveOrders(data);
+      
+      // Also update local state
+      setOrders(data);
+      setLastSyncTime(new Date());
+      
+      // Backup to localStorage
+      localStorage.setItem('orders-final', JSON.stringify(data));
+      
+      console.log(`✅ Saved ${data.length} orders to Firebase`);
+    } catch (error) {
+      console.error('Error saving to Firebase:', error);
+      showToast('Failed to save data to Firebase', 'error');
+      
+      // Even if Firebase fails, save locally
       localStorage.setItem('orders-final', JSON.stringify(data));
       setOrders(data);
-      
-      // Then TRY to save to Google Sheets if enabled
-      // Note: This may fail with 401 if API key is read-only
-      if (useGoogleSheets) {
-        try {
-          await googleSheetsService.saveOrders(data);
-          setLastSyncTime(new Date());
-          showToast('Saved to browser and Google Sheets', 'success');
-        } catch (error) {
-          console.warn('Could not save to Google Sheets (API key may be read-only):', error);
-          // Don't show error to user - data is still saved locally
-          // Google Sheets can be updated manually
-        }
-      }
-    } catch (error) {
-      console.error('Error saving orders:', error);
-      showToast('Failed to save data', 'error');
     }
   };
 
-  // Manual refresh from Google Sheets
-  const refreshFromSheets = async () => {
-    if (!useGoogleSheets) {
-      showToast('Google Sheets sync is disabled', 'info');
-      return;
-    }
-
+  // Initialize Firebase machines (run once)
+  const initializeFirebase = async () => {
     setIsLoadingFromSheets(true);
     try {
-      const sheetData = await googleSheetsService.fetchOrders();
-      
-      // Get current local data
-      const localData = orders;
-      
-      // Find orders that exist locally but not in Google Sheets
-      // These are new orders created on the website
-      const localOnlyOrders = localData.filter(localOrder => {
-        // Check if this order exists in sheet data by ID
-        const existsInSheet = sheetData.some(sheetOrder => sheetOrder.id === localOrder.id);
-        return !existsInSheet;
-      });
-      
-      // Merge: Sheet data (source of truth) + Local-only orders (new ones not yet in sheet)
-      const mergedData = [...sheetData, ...localOnlyOrders];
-      
-      setOrders(mergedData);
-      setLastSyncTime(new Date());
-      localStorage.setItem('orders-final', JSON.stringify(mergedData));
-      
-      if (localOnlyOrders.length > 0) {
-        showToast(
-          `Refreshed from Google Sheets. Kept ${localOnlyOrders.length} local order(s) not yet in sheet.`, 
-          'success'
-        );
-      } else {
-        showToast(`Refreshed ${sheetData.length} orders from Google Sheets`, 'success');
-      }
+      // Initialize default machines in Firebase
+      await firebaseService.initializeDefaultMachines();
+      showToast('✅ Firebase initialized with default machines', 'success');
     } catch (error) {
-      console.error('Error refreshing from Google Sheets:', error);
-      showToast('Failed to refresh from Google Sheets', 'error');
+      console.error('Error initializing Firebase:', error);
+      showToast('Failed to initialize Firebase', 'error');
+    } finally {
+      setIsLoadingFromSheets(false);
+    }
+  };
+
+  // Migrate data from Google Sheets to Firebase (one-time migration)
+  const migrateFromGoogleSheets = async () => {
+    setIsLoadingFromSheets(true);
+    try {
+      showToast('Migrating data from Google Sheets to Firebase...', 'info');
+      
+      // Import googleSheetsService temporarily
+      const { googleSheetsService } = await import('./google-sheets-service.js');
+      
+      // Fetch from Google Sheets
+      const sheetsData = await googleSheetsService.fetchOrders();
+      
+      // Save to Firebase
+      await firebaseService.importFromGoogleSheets(sheetsData);
+      
+      showToast(`✅ Migrated ${sheetsData.length} orders to Firebase!`, 'success');
+      setShowMigrateButton(false);
+    } catch (error) {
+      console.error('Error migrating from Google Sheets:', error);
+      showToast('Failed to migrate from Google Sheets', 'error');
     } finally {
       setIsLoadingFromSheets(false);
     }
@@ -843,21 +805,31 @@ export default function App() {
               <p className="text-sm text-slate-300">Corrugated Sheet Plant Planning</p>
             </div>
             <div className="flex gap-3 items-center">
-              {/* Sync Status */}
-              {useGoogleSheets && lastSyncTime && (
-                <div className="text-sm text-green-300">
-                  ✓ Synced {Math.round((new Date() - lastSyncTime) / 1000)}s ago
+              {/* Firebase Real-Time Status */}
+              {lastSyncTime && (
+                <div className="flex items-center gap-2 text-sm bg-green-500/20 text-green-300 px-3 py-1 rounded-full">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  🔥 Live
                 </div>
               )}
               
-              {/* Refresh Button */}
-              {useGoogleSheets && (
+              {/* Migrate from Google Sheets Button */}
+              {showMigrateButton && (
                 <button 
-                  onClick={refreshFromSheets}
+                  onClick={migrateFromGoogleSheets}
                   disabled={isLoadingFromSheets}
-                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  <TrendingUp size={18} className={isLoadingFromSheets ? 'animate-spin' : ''} />
-                  {isLoadingFromSheets ? 'Syncing...' : 'Refresh'}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                  <Upload size={18} />
+                  {isLoadingFromSheets ? 'Migrating...' : 'Migrate from Sheets'}
+                </button>
+              )}
+              
+              {/* Initialize Firebase Button (for first-time setup) */}
+              {orders.length === 0 && machines.length === DEFAULT_MACHINES.length && (
+                <button 
+                  onClick={initializeFirebase}
+                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg transition-colors">
+                  🔥 Initialize Firebase
                 </button>
               )}
               
