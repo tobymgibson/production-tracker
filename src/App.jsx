@@ -791,7 +791,7 @@ export default function App() {
               type={showPwd ? 'text' : 'password'}
               value={pwd}
               onChange={e => setPwd(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && pwd === 'corrugated2025' && setAuth(true)}
+              onKeyPress={e => e.key === 'Enter' && pwd === 'CorrugatedTracker2026!' && setAuth(true)}
               placeholder="Enter password"
               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 pr-12 focus:border-amber-500 focus:outline-none transition-colors"
             />
@@ -802,7 +802,7 @@ export default function App() {
             </button>
           </div>
           <button
-            onClick={() => pwd === 'corrugated2025' ? setAuth(true) : alert('Incorrect password')}
+            onClick={() => pwd === 'CorrugatedTracker2026!' ? setAuth(true) : alert('Incorrect password')}
             className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
           >
             Access System
