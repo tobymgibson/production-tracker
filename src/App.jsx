@@ -124,15 +124,36 @@ export default function App() {
       setOrders(ordersData);
       setLastSyncTime(new Date());
       
+      // If Firebase is empty, check if we have Google Sheets data to migrate
+      if (ordersData.length === 0) {
+        // Check localStorage for Google Sheets data
+        try {
+          const stored = localStorage.getItem('orders-final');
+          if (stored) {
+            const localOrders = JSON.parse(stored);
+            if (localOrders.length > 0) {
+              console.log(`💡 Found ${localOrders.length} orders in localStorage - showing migrate button`);
+              setShowMigrateButton(true);
+            }
+          }
+        } catch (e) {
+          console.error('Error checking localStorage:', e);
+        }
+      }
+      
       // Also save to localStorage as backup
       localStorage.setItem('orders-final', JSON.stringify(ordersData));
     });
     
     // Subscribe to real-time machine updates
     const unsubscribeMachines = firebaseService.subscribeToMachines((machinesData) => {
-      console.log(`🔥 Real-time update: ${machinesData.length} machines`);
+      console.log(`🔥 Real-time update: ${machinesData.length} machines`, machinesData);
       if (machinesData.length > 0) {
         setMachines(machinesData);
+      } else {
+        // No machines in Firebase - show initialize button
+        console.log('⚠️ No machines in Firebase - using defaults');
+        setMachines(DEFAULT_MACHINES);
       }
     });
     
@@ -173,17 +194,22 @@ export default function App() {
 
   const save = async (data) => {
     try {
-      // Save to Firebase - all users will see the update in real-time!
-      await firebaseService.saveOrders(data);
+      console.log(`💾 Attempting to save ${data.length} orders...`);
       
-      // Also update local state
-      setOrders(data);
+      // DON'T use saveOrders (batch) - it overwrites everything
+      // Instead, save each order individually to preserve multi-user data
+      for (const order of data) {
+        await firebaseService.saveOrder(order);
+      }
+      
+      console.log(`✅ Saved ${data.length} orders individually to Firebase`);
+      
+      // Local state will update automatically via Firebase subscription
+      // No need to manually setOrders - the real-time listener handles it
       setLastSyncTime(new Date());
       
       // Backup to localStorage
       localStorage.setItem('orders-final', JSON.stringify(data));
-      
-      console.log(`✅ Saved ${data.length} orders to Firebase`);
     } catch (error) {
       console.error('Error saving to Firebase:', error);
       showToast('Failed to save data to Firebase', 'error');
@@ -234,21 +260,53 @@ export default function App() {
     }
   };
 
-  const deleteOrder = (id) => {
+  const deleteOrder = async (id) => {
     const order = orders.find(o => o.id === id);
     const confirmed = window.confirm(`DELETE ORDER?\n\nCustomer: ${order?.customer}\n\nThis cannot be undone!`);
     if (confirmed) {
-      const filtered = orders.filter(o => o.id !== id);
-      save(filtered);
+      try {
+        await firebaseService.deleteOrder(id);
+        // State updates automatically via Firebase subscription
+        showToast('Order deleted', 'success');
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        showToast('Failed to delete order', 'error');
+      }
     }
   };
 
-  const toggleVal = (id, key) => {
-    save(orders.map(o => o.id === id ? {...o, validations: {...o.validations, [key]: !o.validations[key]}} : o));
+  const toggleVal = async (id, key) => {
+    const order = orders.find(o => o.id === id);
+    if (order) {
+      const updatedOrder = {
+        ...order,
+        validations: {
+          ...order.validations,
+          [key]: !order.validations[key]
+        }
+      };
+      try {
+        await firebaseService.saveOrder(updatedOrder);
+        // State updates automatically via Firebase subscription
+      } catch (error) {
+        console.error('Error toggling validation:', error);
+        showToast('Failed to update checkbox', 'error');
+      }
+    }
   };
 
-  const updateOrder = (id, updates) => {
-    save(orders.map(o => o.id === id ? {...o, ...updates} : o));
+  const updateOrder = async (id, updates) => {
+    const order = orders.find(o => o.id === id);
+    if (order) {
+      const updatedOrder = { ...order, ...updates };
+      try {
+        await firebaseService.saveOrder(updatedOrder);
+        // State updates automatically via Firebase subscription
+      } catch (error) {
+        console.error('Error updating order:', error);
+        showToast('Failed to update order', 'error');
+      }
+    }
   };
 
   const updateEditingOrder = (id, field, value) => {
@@ -293,10 +351,24 @@ export default function App() {
 
   const saveNewOrder = async () => {
     if (newOrder && newOrder.customer) {
-      await save([{...newOrder, id: `${Date.now()}`}, ...orders]);
-      setNewOrder(null);
-      setView('active');
-      showToast('Order created successfully!', 'success');
+      const orderToSave = {
+        ...newOrder, 
+        id: `${Date.now()}`,
+        created: new Date().toISOString()
+      };
+      
+      try {
+        // Save single order to Firebase (more efficient than saving all)
+        await firebaseService.saveOrder(orderToSave);
+        
+        // Local state updates automatically via Firebase subscription
+        setNewOrder(null);
+        setView('active');
+        showToast('✅ Order created and synced!', 'success');
+      } catch (error) {
+        console.error('Error saving new order:', error);
+        showToast('Failed to save order', 'error');
+      }
     } else {
       showToast('Please enter at least a customer name before saving.', 'error');
     }
@@ -1938,12 +2010,17 @@ export default function App() {
 
             <div className="flex gap-3">
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (clearConfirmText === 'DELETE ALL') {
-                    save([]);
-                    setShowClearModal(false);
-                    setClearConfirmText('');
-                    showToast('All orders have been deleted.', 'success');
+                    try {
+                      await firebaseService.clearAllOrders();
+                      setShowClearModal(false);
+                      setClearConfirmText('');
+                      showToast('All orders have been deleted.', 'success');
+                    } catch (error) {
+                      console.error('Error clearing all orders:', error);
+                      showToast('Failed to delete all orders', 'error');
+                    }
                   } else {
                     showToast('Please type DELETE ALL exactly to confirm.', 'error');
                   }
