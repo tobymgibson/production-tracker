@@ -791,7 +791,7 @@ export default function App() {
               type={showPwd ? 'text' : 'password'}
               value={pwd}
               onChange={e => setPwd(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && pwd === 'CorrugatedTracker2026!' && setAuth(true)}
+              onKeyPress={e => e.key === 'Enter' && pwd === 'corrugated2025' && setAuth(true)}
               placeholder="Enter password"
               className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 pr-12 focus:border-amber-500 focus:outline-none transition-colors"
             />
@@ -802,7 +802,7 @@ export default function App() {
             </button>
           </div>
           <button
-            onClick={() => pwd === 'CorrugatedTracker2026!' ? setAuth(true) : alert('Incorrect password')}
+            onClick={() => pwd === 'corrugated2025' ? setAuth(true) : alert('Incorrect password')}
             className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
           >
             Access System
@@ -1351,64 +1351,102 @@ export default function App() {
 
         {/* CAPACITY PLANNING VIEW */}
         {view === 'capacity' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-slate-700">Filter by Machine</label>
+          <div className="space-y-5">
+
+            {/* TOP SUMMARY STRIP - at-a-glance for all machines */}
+            <div className="grid grid-cols-4 gap-3">
+              {MACHINES.map(machine => {
+                const machineActiveOrders = active.filter(o => o.machineId === machine.id && o.planningDate);
+                const totalScheduled = machineActiveOrders.reduce((sum, o) => sum + (parseInt(String(o.quantity||'0').replace(/,/g,''))||0), 0);
+                const utilPct = Math.round((totalScheduled / machine.availableCapacity) * 100);
+                const stockReserved = Math.round(machine.capacity * (machine.stockPercentage / 100));
+                const isOver = utilPct > 105;
+                const isNear = utilPct >= 90 && utilPct <= 105;
+                const scheduledDays = new Set(machineActiveOrders.map(o => o.planningDate)).size;
+                return (
+                  <div key={machine.id} className={`rounded-xl p-4 border-2 ${
+                    isOver ? 'bg-red-50 border-red-400' :
+                    isNear ? 'bg-orange-50 border-orange-400' :
+                    'bg-white border-slate-200'
+                  }`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="text-lg font-bold text-slate-900">{machine.name}</div>
+                        <div className="text-xs text-slate-500">{machine.fullName}</div>
+                      </div>
+                      <div className={`text-2xl font-black ${isOver ? 'text-red-600' : isNear ? 'text-orange-500' : 'text-blue-600'}`}>
+                        {utilPct}%
+                      </div>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-3 mb-3">
+                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-orange-500' : 'bg-blue-500'}`}
+                        style={{ width: `${Math.min(utilPct, 100)}%` }} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                        <div className="text-slate-400 mb-0.5">Scheduled</div>
+                        <div className="font-bold text-slate-800">{totalScheduled.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                        <div className="text-slate-400 mb-0.5">Available</div>
+                        <div className="font-bold text-blue-700">{machine.availableCapacity.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                        <div className="text-slate-400 mb-0.5">Stock Alloc.</div>
+                        <div className="font-bold text-slate-600">{stockReserved.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                        <div className="text-slate-400 mb-0.5">Days Booked</div>
+                        <div className="font-bold text-slate-800">{scheduledDays}</div>
+                      </div>
+                    </div>
+                    {isOver && <div className="mt-2 text-xs font-bold text-red-600 bg-red-100 rounded-lg px-2 py-1 text-center">⚠️ OVER CAPACITY</div>}
+                    {isNear && !isOver && <div className="mt-2 text-xs font-bold text-orange-600 bg-orange-100 rounded-lg px-2 py-1 text-center">⚡ NEAR CAPACITY</div>}
+                    {!isOver && !isNear && <div className="mt-2 text-xs font-bold text-green-600 bg-green-100 rounded-lg px-2 py-1 text-center">✓ OK</div>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* FILTERS */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Filter by Machine</label>
                   <select 
                     value={filterMachine} 
                     onChange={e => setFilterMachine(e.target.value)}
-                    className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none"
+                    className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
                   >
                     <option value="All">All Machines</option>
-                    {MACHINES.map(m => <option key={m.id} value={m.id}>{m.name} - {m.fullName}</option>)}
+                    {MACHINES.map(m => <option key={m.id} value={m.id}>{m.name} — {m.fullName}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2 text-slate-700">Filter by Date</label>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Filter by Date</label>
                   <div className="flex gap-2">
                     <input 
                       type="date" 
                       value={filterDate} 
                       onChange={e => setFilterDate(e.target.value)}
-                      className="flex-1 border-2 border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none"
+                      className="flex-1 border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
                     />
                     {filterDate && (
-                      <button 
-                        onClick={() => setFilterDate('')} 
-                        className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">
+                      <button onClick={() => setFilterDate('')} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm">
                         Clear
                       </button>
                     )}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Capacity Legend */}
-            <div className="bg-gradient-to-r from-blue-50 to-slate-50 rounded-xl shadow-md p-4 border-2 border-blue-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-slate-400 rounded"></div>
-                    <span className="text-sm font-semibold text-slate-700">Stock Customer Allocation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                    <span className="text-sm font-semibold text-slate-700">Non-Stock Orders (This System)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-100 border-2 border-green-500 rounded"></div>
-                    <span className="text-sm font-semibold text-slate-700">Available Capacity</span>
-                  </div>
-                </div>
-                <div className="text-sm text-slate-600">
-                  Alerts based on available capacity after stock allocation
+                <div className="flex items-center gap-4 text-xs text-slate-600 border-l border-slate-200 pl-4">
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-400 rounded-sm"></div>Stock</div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div>Non-Stock</div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-green-400 rounded-sm"></div>Available</div>
                 </div>
               </div>
             </div>
 
+            {/* PER-MACHINE DAILY BREAKDOWN */}
             {MACHINES.filter(m => filterMachine === 'All' || m.id === parseInt(filterMachine)).map(machine => {
               const dates = Array.from(new Set(
                 orders
@@ -1425,182 +1463,155 @@ export default function App() {
                   o.status !== 'Complete' &&
                   o.status !== 'Deleted'
                 );
-                
                 const nonStockUsed = ordersOnDate.reduce((sum, o) => {
                   const qty = parseInt(String(o.quantity || '0').replace(/,/g, '')) || 0;
                   return sum + qty;
                 }, 0);
-
                 const totalUsed = stockReserved + nonStockUsed;
-
                 return {
-                  date,
-                  orders: ordersOnDate,
-                  nonStockUsed,
-                  stockReserved,
-                  totalUsed,
+                  date, orders: ordersOnDate, nonStockUsed, stockReserved, totalUsed,
                   totalCapacity: machine.capacity,
                   availableCapacity: machine.availableCapacity,
+                  remaining: Math.max(0, machine.availableCapacity - nonStockUsed),
                   percentageOfAvailable: Math.round((nonStockUsed / machine.availableCapacity) * 100),
                   percentageOfTotal: Math.round((totalUsed / machine.capacity) * 100),
-                  isOver: nonStockUsed > machine.availableCapacity * 1.05, // 5% tolerance
+                  isOver: nonStockUsed > machine.availableCapacity * 1.05,
                   isNear: nonStockUsed >= machine.availableCapacity * 0.9 && nonStockUsed <= machine.availableCapacity * 1.05
                 };
               }).filter(d => d.orders.length > 0);
 
+              if (machineOrders.length === 0 && filterMachine !== 'All') return (
+                <div key={machine.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-400">
+                  No scheduled orders for {machine.name}
+                </div>
+              );
+              if (machineOrders.length === 0) return null;
+
               return (
-                <div key={machine.id} className="bg-white rounded-xl shadow-md p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-900">{machine.name} - {machine.fullName}</h3>
-                      <div className="text-sm text-slate-600 mt-2 space-y-1">
-                        <div>Total Capacity: <span className="font-semibold">{machine.capacity.toLocaleString()}</span> feeds/day</div>
-                        <div>Stock Allocation: <span className="font-semibold">{stockReserved.toLocaleString()}</span> feeds ({machine.stockPercentage}%)</div>
-                        <div>Available for Non-Stock: <span className="font-semibold text-blue-600">{machine.availableCapacity.toLocaleString()}</span> feeds</div>
+                <div key={machine.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                  
+                  {/* Machine Header */}
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center font-black text-slate-900 text-sm">{machine.name}</div>
+                      <div>
+                        <div className="font-bold text-white text-lg">{machine.fullName}</div>
+                        <div className="text-slate-400 text-xs">
+                          Total: {machine.capacity.toLocaleString()} feeds · Stock: {stockReserved.toLocaleString()} ({machine.stockPercentage}%) · Available: {machine.availableCapacity.toLocaleString()}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-slate-600">Total Scheduled Days</div>
-                      <div className="text-2xl font-bold text-slate-900">{machineOrders.length}</div>
+                      <div className="text-slate-400 text-xs mb-0.5">{machineOrders.length} day{machineOrders.length !== 1 ? 's' : ''} scheduled</div>
+                      <div className="text-white font-bold">{machineOrders.reduce((s,d) => s + d.orders.length, 0)} orders</div>
                     </div>
                   </div>
 
-                  {machineOrders.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg">
-                      No scheduled orders for this machine
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {machineOrders.map(day => (
-                        <div key={day.date} className={`p-5 border-2 rounded-xl ${
-                          day.isOver ? 'border-red-500 bg-red-50' : 
-                          day.isNear ? 'border-orange-500 bg-orange-50' : 
-                          'border-slate-200 bg-slate-50'
-                        }`}>
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <div className="font-bold text-lg text-slate-900">
-                                {new Date(day.date).toLocaleDateString('en-GB', {
-                                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                                })}
-                              </div>
-                              <div className="text-sm text-slate-600 mt-1">
-                                {day.orders.length} non-stock order{day.orders.length !== 1 ? 's' : ''} scheduled
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className={`text-2xl font-bold ${
-                                day.isOver ? 'text-red-600' : day.isNear ? 'text-orange-600' : 'text-slate-900'
-                              }`}>
-                                {day.percentageOfAvailable}%
-                              </div>
-                              <div className="text-sm text-slate-600">
-                                of available capacity
-                              </div>
-                            </div>
-                          </div>
+                  {/* Daily rows */}
+                  <div className="divide-y divide-slate-100">
+                    {machineOrders.map(day => {
+                      const dateObj = new Date(day.date + 'T00:00:00');
+                      const dayName = dateObj.toLocaleDateString('en-GB', { weekday: 'short' });
+                      const dayNum = dateObj.toLocaleDateString('en-GB', { day: 'numeric' });
+                      const monthName = dateObj.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+                      const stockPct = (day.stockReserved / day.totalCapacity) * 100;
+                      const nonStockPct = Math.min((day.nonStockUsed / day.totalCapacity) * 100, 100 - stockPct);
+                      const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
+
+                      return (
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-orange-50' : 'bg-white'}`}>
                           
-                          {/* Dual-capacity progress bar */}
-                          <div className="relative w-full bg-slate-200 rounded-full h-6 mb-3">
-                            {/* Stock reserved (baseline) */}
-                            <div 
-                              className="absolute h-6 bg-slate-400 rounded-l-full flex items-center justify-center text-xs text-white font-semibold"
-                              style={{ width: `${(day.stockReserved / day.totalCapacity) * 100}%` }}
-                            >
-                              {(day.stockReserved / day.totalCapacity) * 100 > 10 && 'Stock'}
-                            </div>
-                            {/* Non-stock orders */}
-                            <div 
-                              className={`absolute h-6 flex items-center justify-center text-xs text-white font-semibold ${
-                                day.isOver ? 'bg-red-600' : day.isNear ? 'bg-orange-500' : 'bg-blue-500'
-                              }`}
-                              style={{ 
-                                left: `${(day.stockReserved / day.totalCapacity) * 100}%`,
-                                width: `${Math.min((day.nonStockUsed / day.totalCapacity) * 100, 100 - (day.stockReserved / day.totalCapacity) * 100)}%`
-                              }}
-                            >
-                              {(day.nonStockUsed / day.totalCapacity) * 100 > 10 && 'Non-Stock'}
-                            </div>
-                            {/* Remaining capacity visualization */}
-                            {!day.isOver && (
-                              <div 
-                                className="absolute h-6 bg-green-50 border-2 border-dashed border-green-500 rounded-r-full flex items-center justify-center text-xs text-green-700 font-semibold"
-                                style={{ 
-                                  left: `${((day.stockReserved + day.nonStockUsed) / day.totalCapacity) * 100}%`,
-                                  width: `${100 - ((day.stockReserved + day.nonStockUsed) / day.totalCapacity) * 100}%`
-                                }}
-                              >
-                                {100 - ((day.stockReserved + day.nonStockUsed) / day.totalCapacity) * 100 > 10 && 'Available'}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Capacity breakdown */}
-                          <div className="grid grid-cols-4 gap-3 mb-4 text-sm">
-                            <div className="bg-white rounded-lg p-3 border border-slate-300">
-                              <div className="text-xs text-slate-500 mb-1">Stock Reserved</div>
-                              <div className="font-bold text-slate-700">{day.stockReserved.toLocaleString()}</div>
-                            </div>
-                            <div className={`rounded-lg p-3 border ${
-                              day.isOver ? 'bg-red-100 border-red-300' : day.isNear ? 'bg-orange-100 border-orange-300' : 'bg-blue-50 border-blue-300'
+                          {/* Row top: date + capacity bar + numbers */}
+                          <div className="flex gap-4 items-center mb-3">
+                            
+                            {/* Date badge */}
+                            <div className={`flex-shrink-0 w-16 text-center rounded-lg py-2 border-2 ${
+                              day.isOver ? 'bg-red-100 border-red-300' :
+                              day.isNear ? 'bg-orange-100 border-orange-300' :
+                              'bg-slate-50 border-slate-200'
                             }`}>
-                              <div className="text-xs text-slate-600 mb-1">Non-Stock Orders</div>
-                              <div className={`font-bold ${day.isOver ? 'text-red-700' : day.isNear ? 'text-orange-700' : 'text-blue-700'}`}>
-                                {day.nonStockUsed.toLocaleString()}
+                              <div className={`text-xs font-bold uppercase tracking-wide ${day.isOver ? 'text-red-500' : day.isNear ? 'text-orange-500' : 'text-slate-400'}`}>{dayName}</div>
+                              <div className={`text-2xl font-black leading-none ${day.isOver ? 'text-red-700' : day.isNear ? 'text-orange-700' : 'text-slate-800'}`}>{dayNum}</div>
+                              <div className="text-xs text-slate-400 mt-0.5">{monthName}</div>
+                            </div>
+
+                            {/* Capacity bar area */}
+                            <div className="flex-1">
+                              <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                                <span>{day.orders.length} order{day.orders.length !== 1 ? 's' : ''}</span>
+                                <span className={`font-bold ${day.isOver ? 'text-red-600' : day.isNear ? 'text-orange-600' : 'text-slate-600'}`}>
+                                  {day.percentageOfAvailable}% of available
+                                </span>
+                              </div>
+                              {/* Stacked capacity bar */}
+                              <div className="w-full h-8 bg-slate-100 rounded-lg overflow-hidden flex">
+                                <div className="h-full bg-slate-400 flex items-center justify-center text-xs text-white font-semibold" style={{ width: `${stockPct}%` }}>
+                                  {stockPct > 8 && 'Stock'}
+                                </div>
+                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${nonStockPct}%` }}>
+                                  {nonStockPct > 8 && day.nonStockUsed.toLocaleString()}
+                                </div>
+                                <div className="h-full bg-green-200 flex items-center justify-center text-xs text-green-700 font-semibold" style={{ width: `${remainPct}%` }}>
+                                  {remainPct > 8 && day.remaining.toLocaleString()}
+                                </div>
+                              </div>
+                              {/* Numbers below bar */}
+                              <div className="flex gap-3 mt-1.5 text-xs">
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-slate-400 rounded-sm inline-block"></span>Stock: <b>{day.stockReserved.toLocaleString()}</b></span>
+                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-orange-500' : 'bg-blue-500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-sm inline-block"></span>Remaining: <b className="text-green-700">{day.remaining.toLocaleString()}</b></span>
+                                <span className="ml-auto text-slate-400">Total: <b className="text-slate-700">{day.totalCapacity.toLocaleString()}</b></span>
                               </div>
                             </div>
-                            <div className="bg-white rounded-lg p-3 border border-slate-300">
-                              <div className="text-xs text-slate-500 mb-1">Total Used</div>
-                              <div className="font-bold text-slate-700">{day.totalUsed.toLocaleString()}</div>
-                            </div>
-                            <div className="bg-white rounded-lg p-3 border border-slate-300">
-                              <div className="text-xs text-slate-500 mb-1">Total Capacity</div>
-                              <div className="font-bold text-slate-900">{day.totalCapacity.toLocaleString()}</div>
+
+                            {/* Status badge */}
+                            <div className={`flex-shrink-0 w-20 text-center rounded-lg py-3 ${
+                              day.isOver ? 'bg-red-500 text-white' :
+                              day.isNear ? 'bg-orange-500 text-white' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              <div className="text-xl font-black">{day.percentageOfAvailable}%</div>
+                              <div className="text-xs font-semibold leading-tight">{day.isOver ? 'OVER' : day.isNear ? 'NEAR' : 'OK'}</div>
                             </div>
                           </div>
 
+                          {/* Over capacity warning */}
                           {day.isOver && (
-                            <div className="bg-red-100 border-2 border-red-400 rounded-lg p-4 mb-4">
-                              <div className="font-bold text-red-900 text-lg mb-2">
-                                ⚠️ OVER AVAILABLE CAPACITY (105% tolerance exceeded)
-                              </div>
-                              <div className="text-sm text-red-800 space-y-1">
-                                <div>Non-stock orders: <span className="font-semibold">{day.nonStockUsed.toLocaleString()}</span> feeds</div>
-                                <div>Available capacity: <span className="font-semibold">{day.availableCapacity.toLocaleString()}</span> feeds</div>
-                                <div>Tolerance limit (105%): <span className="font-semibold">{Math.round(day.availableCapacity * 1.05).toLocaleString()}</span> feeds</div>
-                                <div className="font-bold pt-2">Over by: <span className="text-lg">{(day.nonStockUsed - Math.round(day.availableCapacity * 1.05)).toLocaleString()}</span> feeds</div>
-                              </div>
-                              <div className="text-sm text-red-700 mt-3 p-3 bg-red-50 rounded border border-red-300">
-                                💡 Consider rescheduling orders or reallocating to another machine
-                              </div>
+                            <div className="flex items-center gap-3 bg-red-100 border border-red-300 rounded-lg px-4 py-2 mb-3 text-sm">
+                              <span className="text-red-600 font-bold text-base">⚠️</span>
+                              <span className="text-red-800">
+                                <b>Over capacity by {(day.nonStockUsed - Math.round(day.availableCapacity * 1.05)).toLocaleString()} feeds</b>
+                                {' '}— Consider rescheduling or reallocating orders
+                              </span>
                             </div>
                           )}
 
-                          {/* Order details */}
-                          <div className="space-y-2">
-                            <div className="text-xs font-semibold text-slate-600 mb-2">NON-STOCK ORDERS:</div>
+                          {/* Orders list - compact */}
+                          <div className="grid grid-cols-1 gap-1.5 pl-20">
                             {day.orders.map(o => (
-                              <div key={o.id} className="bg-white rounded-lg p-3 border border-slate-200 hover:border-blue-400 transition-colors">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <div className="font-semibold text-slate-900">{o.customer}</div>
-                                    <div className="text-sm text-slate-600">{o.description}</div>
-                                    {o.spec && <div className="text-xs text-slate-500 mt-1">{o.spec}</div>}
+                              <div key={o.id} className="flex items-center justify-between bg-white rounded-lg px-4 py-2.5 border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${day.isOver ? 'bg-red-400' : day.isNear ? 'bg-orange-400' : 'bg-blue-400'}`}></div>
+                                  <div className="min-w-0">
+                                    <div className="font-semibold text-slate-900 truncate">{o.customer}</div>
+                                    <div className="text-xs text-slate-500 truncate">{o.description}{o.worksOrder && ` · ${o.worksOrder}`}</div>
                                   </div>
-                                  <div className="text-right ml-4">
-                                    <div className="font-bold text-slate-900 text-lg">
-                                      {parseInt(String(o.quantity || '0').replace(/,/g, '')).toLocaleString()}
-                                    </div>
-                                    <div className="text-xs text-slate-500">feeds</div>
+                                </div>
+                                <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                                  {o.spec && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">{o.spec}</span>}
+                                  <div className="text-right">
+                                    <div className="font-bold text-slate-900">{parseInt(String(o.quantity||'0').replace(/,/g,'')).toLocaleString()}</div>
+                                    <div className="text-xs text-slate-400">feeds</div>
                                   </div>
+                                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${STATUS_COLORS[o.status] || 'bg-slate-100 text-slate-600'}`}>{o.status}</span>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
