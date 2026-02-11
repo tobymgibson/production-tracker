@@ -1,3 +1,7 @@
+
+App · JSX
+Copy
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, Upload, Lock, Eye, EyeOff, AlertTriangle, TrendingUp, Calendar, Package, Search, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { firebaseService } from './firebase-service.js';
@@ -51,9 +55,9 @@ const VALIDATIONS = [
 ];
 
 const STATUS_COLORS = {
-  'In Progress': 'bg-blue-100 text-blue-800 border-blue-300',
-  'Complete': 'bg-green-100 text-green-800 border-green-300',
-  'Deleted': 'bg-red-100 text-red-800 border-red-300',
+  'In Progress': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Complete': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Deleted': 'bg-red-50 text-red-600 border-red-200',
   'On Hold': 'bg-yellow-100 text-yellow-800 border-yellow-300',
   'Urgent': 'bg-orange-100 text-orange-800 border-orange-300'
 };
@@ -89,6 +93,55 @@ export default function App() {
 
   // For backward compatibility - MACHINES references the dynamic machines state
   const MACHINES = machines;
+
+  // Capacity warning - recomputes live as user fills in machine/date/quantity
+  const _nomid = newOrder ? newOrder.machineId : null;
+  const _nopdate = newOrder ? newOrder.planningDate : '';
+  const _noqty = newOrder ? newOrder.quantity : '';
+
+  const capacityWarning = useMemo(() => {
+    if (!_nomid || !_nopdate || !_noqty) return null;
+    const machine = machines.find(m => m.id === _nomid);
+    if (!machine) return null;
+    const newQty = parseInt(String(_noqty).replace(/,/g, '')) || 0;
+    if (newQty === 0) return null;
+    const existingOrders = orders.filter(o =>
+      o.machineId === _nomid &&
+      o.planningDate === _nopdate &&
+      o.status !== 'Complete' &&
+      o.status !== 'Deleted'
+    );
+    const existingQty = existingOrders.reduce((sum, o) =>
+      sum + (parseInt(String(o.quantity || '0').replace(/,/g, '')) || 0), 0
+    );
+    const totalAfterAdd = existingQty + newQty;
+    const availableCapacity = machine.availableCapacity;
+    const utilisationPct = Math.round((totalAfterAdd / availableCapacity) * 100);
+    const isOver = totalAfterAdd > availableCapacity * 1.05;
+    const isNear = totalAfterAdd >= availableCapacity * 0.9 && !isOver;
+    const suggestedDates = [];
+    for (let i = 1; i <= 21; i++) {
+      const d = new Date(_nopdate + 'T00:00:00');
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+      const usedOnDay = orders
+        .filter(o => o.machineId === _nomid && o.planningDate === dateStr && o.status !== 'Complete' && o.status !== 'Deleted')
+        .reduce((sum, o) => sum + (parseInt(String(o.quantity || '0').replace(/,/g, '')) || 0), 0);
+      if (usedOnDay + newQty <= availableCapacity) {
+        suggestedDates.push({
+          date: dateStr,
+          remaining: availableCapacity - usedOnDay,
+          dayName: d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+        });
+        if (suggestedDates.length >= 3) break;
+      }
+    }
+    return {
+      machine, existingQty, newQty, totalAfterAdd, availableCapacity,
+      remaining: Math.max(0, availableCapacity - totalAfterAdd),
+      utilisationPct, isOver, isNear, existingOrders, suggestedDates
+    };
+  }, [_nomid, _nopdate, _noqty, orders, machines]);
 
   // Add animation styles
   React.useEffect(() => {
@@ -777,36 +830,38 @@ export default function App() {
 
   if (!auth) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md">
-          <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl">
-              <Lock size={40} className="text-white" />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-500 rounded-xl mb-5">
+              <Lock size={22} className="text-white" />
             </div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Production Tracker</h1>
+            <p className="text-slate-500 text-sm mt-1">Corrugated Sheet Plant</p>
           </div>
-          <h1 className="text-3xl font-bold text-center mb-2 text-slate-900">Production Tracker</h1>
-          <p className="text-center text-slate-600 mb-8 text-sm">Corrugated Sheet Plant Planning System</p>
-          <div className="relative mb-6">
-            <input
-              type={showPwd ? 'text' : 'password'}
-              value={pwd}
-              onChange={e => setPwd(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && pwd === 'corrugated2025' && setAuth(true)}
-              placeholder="Enter password"
-              className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 pr-12 focus:border-amber-500 focus:outline-none transition-colors"
-            />
-            <button 
-              onClick={() => setShowPwd(!showPwd)} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              {showPwd ? <EyeOff size={20} /> : <Eye size={20} />}
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+            <div className="relative mb-4">
+              <input
+                type={showPwd ? 'text' : 'password'}
+                value={pwd}
+                onChange={e => setPwd(e.target.value)}
+                onKeyPress={e => e.key === 'Enter' && pwd === 'CorrugatedTracker2026!' && setAuth(true)}
+                placeholder="Enter password"
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 pr-12 focus:border-amber-500 focus:outline-none transition-colors placeholder-slate-500 text-sm"
+              />
+              <button
+                onClick={() => setShowPwd(!showPwd)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            <button
+              onClick={() => pwd === 'CorrugatedTracker2026!' ? setAuth(true) : alert('Incorrect password')}
+              className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-3 rounded-xl font-semibold transition-all text-sm tracking-wide"
+            >
+              Sign In
             </button>
           </div>
-          <button
-            onClick={() => pwd === 'corrugated2025' ? setAuth(true) : alert('Incorrect password')}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl"
-          >
-            Access System
-          </button>
         </div>
       </div>
     );
@@ -869,61 +924,53 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="bg-slate-950 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold">Production Tracker</h1>
-              <p className="text-sm text-slate-300">Corrugated Sheet Plant Planning</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-slate-950 font-black text-xs">PT</span>
+              </div>
+              <div>
+                <h1 className="text-base font-bold tracking-tight leading-none">Production Tracker</h1>
+                <p className="text-xs text-slate-500 leading-none mt-0.5">Corrugated Sheet Plant</p>
+              </div>
             </div>
-            <div className="flex gap-3 items-center">
-              {/* Firebase Real-Time Status */}
+            <div className="flex gap-2 items-center">
               {lastSyncTime && (
-                <div className="flex items-center gap-2 text-sm bg-green-500/20 text-green-300 px-3 py-1 rounded-full">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  🔥 Live
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950 border border-emerald-900 px-2.5 py-1 rounded-full">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                  Live
                 </div>
               )}
-              
-              {/* Migrate from Google Sheets Button */}
               {showMigrateButton && (
-                <button 
-                  onClick={migrateFromGoogleSheets}
-                  disabled={isLoadingFromSheets}
-                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-                  <Upload size={18} />
+                <button onClick={migrateFromGoogleSheets} disabled={isLoadingFromSheets}
+                  className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 text-xs">
+                  <Upload size={13} />
                   {isLoadingFromSheets ? 'Migrating...' : 'Migrate from Sheets'}
                 </button>
               )}
-              
-              {/* Initialize Firebase Button (for first-time setup) */}
               {orders.length === 0 && machines.length === DEFAULT_MACHINES.length && (
-                <button 
-                  onClick={initializeFirebase}
-                  className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg transition-colors">
-                  🔥 Initialize Firebase
+                <button onClick={initializeFirebase}
+                  className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
+                  Initialise
                 </button>
               )}
-              
-              <button onClick={() => {
-                initNewOrder();
-                setView('neworder');
-              }} 
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors font-semibold">
-                <Plus size={18} />New Order
+              <button onClick={() => { initNewOrder(); setView('neworder'); }}
+                className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg transition-colors font-semibold text-sm">
+                <Plus size={15} />New Order
               </button>
-              <button onClick={importData} 
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors">
-                <Upload size={18} />Import
+              <button onClick={importData}
+                className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg transition-colors text-sm">
+                <Upload size={15} />Import
               </button>
-              <button onClick={exportData} 
-                className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors">
-                <Download size={18} />Export
+              <button onClick={exportData}
+                className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-lg transition-colors text-sm">
+                <Download size={15} />Export
               </button>
-              <button 
-                onClick={() => setShowClearModal(true)}
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors">
-                <X size={18} />Clear All
+              <button onClick={() => setShowClearModal(true)}
+                className="flex items-center gap-1.5 bg-slate-800 hover:bg-red-900 border border-slate-700 hover:border-red-800 px-3 py-2 rounded-lg transition-colors text-sm text-slate-400 hover:text-red-400">
+                <X size={15} />
               </button>
             </div>
           </div>
@@ -931,63 +978,67 @@ export default function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-1 py-2">
+          <div className="flex gap-0.5 py-1.5">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+              { id: 'active', label: `Active`, count: active.length, icon: Package },
+              { id: 'materialneeded', label: `Materials`, count: active.filter(o => !o.validations?.materialpurchasing).length, icon: null, alert: true },
+              { id: 'capacity', label: 'Capacity', icon: Calendar },
+              { id: 'completed', label: `Completed`, count: completed.length, icon: null },
+              { id: 'all', label: 'All Orders', icon: null },
               { id: 'neworder', label: 'New Order', icon: Plus },
-              { id: 'active', label: `Active (${active.length})`, icon: Package },
-              { id: 'materialneeded', label: `Material Needed (${active.filter(o => !o.validations?.materialpurchasing).length})`, icon: null },
-              { id: 'capacity', label: 'Capacity Planning', icon: Calendar },
-              { id: 'completed', label: `Completed (${completed.length})`, icon: null },
-              { id: 'all', label: 'All Orders', icon: null }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => {
-                  if (tab.id === 'neworder' && !newOrder) {
-                    initNewOrder();
-                  }
+                  if (tab.id === 'neworder' && !newOrder) initNewOrder();
                   setView(tab.id);
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  view === tab.id 
-                    ? 'bg-amber-500 text-white shadow-md' 
-                    : tab.id === 'materialneeded' && active.filter(o => !o.validations?.materialpurchasing).length > 0
-                    ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-100'
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  view === tab.id
+                    ? 'bg-slate-950 text-white'
+                    : tab.alert && tab.count > 0
+                    ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
-                {tab.icon && <tab.icon size={16} />}
-                {tab.id === 'materialneeded' && '📦 '}
+                {tab.icon && <tab.icon size={14} />}
                 {tab.label}
+                {tab.count !== undefined && (
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                    view === tab.id ? 'bg-white/20 text-white' :
+                    tab.alert && tab.count > 0 ? 'bg-amber-200 text-amber-800' :
+                    'bg-slate-200 text-slate-600'
+                  }`}>{tab.count}</span>
+                )}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-6 py-4">
         {/* NEW ORDER VIEW */}
         {view === 'neworder' && (
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl shadow-lg p-8">
-              <div className="flex items-center justify-between mb-6">
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Create New Order</h2>
-                  <p className="text-slate-600 mt-1">Fill in the order details below</p>
+                  <h2 className="text-lg font-bold text-slate-900">Create New Order</h2>
+                  <p className="text-slate-500 text-sm mt-0.5">Fill in the order details below</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     onClick={saveNewOrder}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-md"
+                    className="flex items-center gap-2 bg-slate-950 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors text-sm"
                   >
                     Save Order
                   </button>
                   <button
                     onClick={cancelNewOrder}
-                    className="flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+                    className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg font-semibold transition-colors text-sm"
                   >
                     Cancel
                   </button>
@@ -995,13 +1046,13 @@ export default function App() {
               </div>
 
               {newOrder && (
-                <div className="space-y-6">
+                <div className="p-6 space-y-5">
                   {/* Basic Information */}
-                  <div className="border-2 border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Basic Information</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                           Customer Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -1009,63 +1060,63 @@ export default function App() {
                           value={newOrder.customer}
                           onChange={e => setNewOrder({...newOrder, customer: e.target.value})}
                           placeholder="Enter customer name"
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none text-lg"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none text-lg"
                           autoFocus
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Works Order Number</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Works Order Number</label>
                         <input
                           type="text"
                           value={newOrder.worksOrder || ''}
                           onChange={e => setNewOrder({...newOrder, worksOrder: e.target.value})}
                           placeholder="e.g., WO-2024-001"
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
                         <input
                           type="text"
                           value={newOrder.description}
                           onChange={e => setNewOrder({...newOrder, description: e.target.value})}
                           placeholder="Order description"
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Specification</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Specification</label>
                         <input
                           type="text"
                           value={newOrder.spec}
                           onChange={e => setNewOrder({...newOrder, spec: e.target.value})}
                           placeholder="e.g., C-Flute, 200gsm"
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Quantity (feeds)</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Quantity (feeds)</label>
                         <input
                           type="text"
                           value={newOrder.quantity}
                           onChange={e => setNewOrder({...newOrder, quantity: e.target.value})}
                           placeholder="e.g., 50000"
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Production Details */}
-                  <div className="border-2 border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Production Details</h3>
+                  <div className="border border-slate-200 rounded-xl p-6">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Production Details</h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Machine Assignment</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Machine Assignment</label>
                         <select
                           value={newOrder.machineId || ''}
                           onChange={e => setNewOrder({...newOrder, machineId: parseInt(e.target.value) || null})}
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         >
                           <option value="">Select Machine</option>
                           {MACHINES.map(m => (
@@ -1076,29 +1127,152 @@ export default function App() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Planning Date</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Planning Date</label>
                         <input
                           type="date"
                           value={newOrder.planningDate}
                           onChange={e => setNewOrder({...newOrder, planningDate: e.target.value})}
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Ship Date</label>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Ship Date</label>
                         <input
                           type="date"
                           value={newOrder.shipsDate}
                           onChange={e => setNewOrder({...newOrder, shipsDate: e.target.value})}
-                          className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
                         />
                       </div>
                     </div>
+
+                    {/* ── CAPACITY WARNING ── */}
+                    {capacityWarning && (
+                      <div className={`mt-4 rounded-xl border-2 overflow-hidden ${
+                        capacityWarning.isOver ? 'border-red-400 bg-red-50' :
+                        capacityWarning.isNear ? 'border-orange-400 bg-orange-50' :
+                        'border-green-400 bg-green-50'
+                      }`}>
+                        {/* Header */}
+                        <div className={`px-5 py-3 flex items-center justify-between ${
+                          capacityWarning.isOver ? 'bg-red-500' :
+                          capacityWarning.isNear ? 'bg-orange-500' :
+                          'bg-green-500'
+                        } text-white`}>
+                          <div className="flex items-center gap-2 font-bold">
+                            {capacityWarning.isOver ? '⚠️ OVER CAPACITY' :
+                             capacityWarning.isNear ? '⚡ NEAR CAPACITY' :
+                             '✓ CAPACITY OK'}
+                            <span className="font-normal text-sm opacity-90">
+                              — {capacityWarning.machine.name} on {new Date(newOrder.planningDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                            </span>
+                          </div>
+                          <div className="text-2xl font-black">{capacityWarning.utilisationPct}%</div>
+                        </div>
+
+                        {/* Capacity bar */}
+                        <div className="px-5 pt-4 pb-2">
+                          <div className="w-full h-7 bg-slate-200 rounded-lg overflow-hidden flex mb-2">
+                            {/* Existing orders */}
+                            <div
+                              className="h-full bg-slate-500 flex items-center justify-center text-xs text-white font-semibold"
+                              style={{ width: `${Math.min((capacityWarning.existingQty / capacityWarning.availableCapacity) * 100, 100)}%` }}
+                            >
+                              {(capacityWarning.existingQty / capacityWarning.availableCapacity) * 100 > 10 && 'Existing'}
+                            </div>
+                            {/* New order being added */}
+                            <div
+                              className={`h-full flex items-center justify-center text-xs text-white font-semibold ${
+                                capacityWarning.isOver ? 'bg-red-500' :
+                                capacityWarning.isNear ? 'bg-orange-400' :
+                                'bg-blue-500'
+                              }`}
+                              style={{ width: `${Math.min((capacityWarning.newQty / capacityWarning.availableCapacity) * 100, 100 - Math.min((capacityWarning.existingQty / capacityWarning.availableCapacity) * 100, 100))}%` }}
+                            >
+                              {(capacityWarning.newQty / capacityWarning.availableCapacity) * 100 > 8 && 'This Order'}
+                            </div>
+                            {/* Remaining */}
+                            {!capacityWarning.isOver && (
+                              <div className="h-full bg-green-200 flex-1 flex items-center justify-center text-xs text-green-700 font-semibold">
+                                {(100 - (capacityWarning.totalAfterAdd / capacityWarning.availableCapacity) * 100) > 8 &&
+                                  `${(capacityWarning.availableCapacity - capacityWarning.totalAfterAdd).toLocaleString()} remaining`}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Numbers row */}
+                          <div className="flex gap-4 text-xs text-slate-600 mb-3">
+                            <span className="flex items-center gap-1">
+                              <span className="w-2.5 h-2.5 bg-slate-500 rounded-sm inline-block"></span>
+                              Existing: <b>{capacityWarning.existingQty.toLocaleString()}</b>
+                            </span>
+                            <span className={`flex items-center gap-1`}>
+                              <span className={`w-2.5 h-2.5 rounded-sm inline-block ${capacityWarning.isOver ? 'bg-red-500' : capacityWarning.isNear ? 'bg-orange-400' : 'bg-blue-500'}`}></span>
+                              This order: <b>{capacityWarning.newQty.toLocaleString()}</b>
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2.5 h-2.5 bg-green-400 rounded-sm inline-block"></span>
+                              Available: <b>{capacityWarning.availableCapacity.toLocaleString()}</b>
+                            </span>
+                            <span className="ml-auto font-semibold">
+                              Total after: <b className={capacityWarning.isOver ? 'text-red-600' : ''}>{capacityWarning.totalAfterAdd.toLocaleString()}</b>
+                            </span>
+                          </div>
+
+                          {/* Over capacity detail */}
+                          {capacityWarning.isOver && (
+                            <div className="bg-red-100 border border-red-300 rounded-lg px-4 py-2.5 mb-3 text-sm text-red-800">
+                              <b>Over by {(capacityWarning.totalAfterAdd - Math.round(capacityWarning.availableCapacity * 1.05)).toLocaleString()} feeds</b>
+                              {' '}after 5% tolerance — this order will exceed {capacityWarning.machine.name}'s available capacity on this date.
+                            </div>
+                          )}
+
+                          {/* Suggested alternative dates */}
+                          {(capacityWarning.isOver || capacityWarning.isNear) && capacityWarning.suggestedDates.length > 0 && (
+                            <div className="mb-3">
+                              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                                💡 Alternative dates with capacity available:
+                              </div>
+                              <div className="flex gap-2 flex-wrap">
+                                {capacityWarning.suggestedDates.map(s => (
+                                  <button
+                                    key={s.date}
+                                    type="button"
+                                    onClick={() => setNewOrder({...newOrder, planningDate: s.date})}
+                                    className="flex items-center gap-2 bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 rounded-lg px-3 py-2 text-sm transition-all"
+                                  >
+                                    <span className="font-bold text-blue-700">{s.dayName}</span>
+                                    <span className="text-slate-500 text-xs">{s.remaining.toLocaleString()} available</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Existing orders on this date */}
+                          {capacityWarning.existingOrders.length > 0 && (
+                            <details className="text-xs">
+                              <summary className="cursor-pointer text-slate-500 hover:text-slate-700 font-semibold mb-1">
+                                {capacityWarning.existingOrders.length} existing order{capacityWarning.existingOrders.length !== 1 ? 's' : ''} on this date
+                              </summary>
+                              <div className="mt-2 space-y-1 pl-2">
+                                {capacityWarning.existingOrders.map(o => (
+                                  <div key={o.id} className="flex justify-between text-slate-600 bg-white rounded px-3 py-1.5 border border-slate-200">
+                                    <span>{o.customer}{o.description ? ` — ${o.description}` : ''}</span>
+                                    <span className="font-bold ml-4">{parseInt(String(o.quantity||'0').replace(/,/g,'')).toLocaleString()} feeds</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Validations */}
-                  <div className="border-2 border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Validation Checklist</h3>
+                  <div className="border border-slate-200 rounded-xl p-6">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Validation Checklist</h3>
                     <div className="grid grid-cols-3 gap-3">
                       {VALIDATIONS.map(v => {
                         const key = v.toLowerCase().replace(/\s+/g, '');
@@ -1134,14 +1308,14 @@ export default function App() {
                   </div>
 
                   {/* Notes */}
-                  <div className="border-2 border-slate-200 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Additional Notes</h3>
+                  <div className="border border-slate-200 rounded-xl p-6">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Additional Notes</h3>
                     <textarea
                       value={newOrder.notes}
                       onChange={e => setNewOrder({...newOrder, notes: e.target.value})}
                       placeholder="Add any additional notes or special instructions for this order..."
                       rows={4}
-                      className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none resize-none"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none resize-none"
                     />
                   </div>
 
@@ -1149,7 +1323,7 @@ export default function App() {
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={saveNewOrder}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors shadow-md text-lg"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors shadow-sm text-lg"
                     >
                       ✓ Save Order
                     </button>
@@ -1171,27 +1345,27 @@ export default function App() {
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-blue-500 p-4">
                 <div className="text-sm text-slate-600 font-semibold mb-1">Active Orders</div>
-                <div className="text-3xl font-bold text-slate-900">{analytics.totalActive}</div>
+                <div className="text-2xl font-bold text-slate-900">{analytics.totalActive}</div>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-emerald-500 p-4">
                 <div className="text-sm text-slate-600 font-semibold mb-1">Completed</div>
-                <div className="text-3xl font-bold text-slate-900">{analytics.totalCompleted}</div>
+                <div className="text-2xl font-bold text-slate-900">{analytics.totalCompleted}</div>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-500">
+              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-amber-500 p-4">
                 <div className="text-sm text-slate-600 font-semibold mb-1">Avg Lead Time</div>
-                <div className="text-3xl font-bold text-slate-900">{analytics.avgLeadTime} <span className="text-lg text-slate-600">days</span></div>
+                <div className="text-2xl font-bold text-slate-900">{analytics.avgLeadTime} <span className="text-lg text-slate-600">days</span></div>
               </div>
-              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-red-500 p-4">
                 <div className="text-sm text-slate-600 font-semibold mb-1">Capacity Alerts</div>
-                <div className="text-3xl font-bold text-slate-900">{analytics.overCapacityDays}</div>
+                <div className="text-2xl font-bold text-slate-900">{analytics.overCapacityDays}</div>
               </div>
             </div>
 
             {/* Alerts Section */}
             {(analytics.overCapacityDays > 0 || analytics.bottlenecks.length > 0) && (
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-6">
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
                 <div className="flex items-start gap-3 mb-4">
                   <AlertTriangle className="text-red-600 mt-1" size={24} />
                   <div>
@@ -1225,8 +1399,8 @@ export default function App() {
             )}
 
             {/* 14-Day Forecast */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">14-Day Capacity Forecast</h3>
+            <div className="bg-white rounded-lg border border-slate-200 p-5">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">14-Day Capacity Forecast</h3>
               {analytics.forecast.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">
                   No scheduled production in the next 14 days
@@ -1307,15 +1481,15 @@ export default function App() {
             </div>
 
             {/* Machine Utilization */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Machine Utilization (Active Orders)</h3>
+            <div className="bg-white rounded-lg border border-slate-200 p-5">
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilization (Active Orders)</h3>
               <div className="grid grid-cols-2 gap-4">
                 {analytics.machineUtil.map(m => {
                   const utilizationColor = m.utilizationPercent >= 100 ? 'text-red-600' : 
                                           m.utilizationPercent >= 90 ? 'text-orange-600' : 
                                           'text-slate-900';
                   return (
-                    <div key={m.machine} className="bg-slate-50 rounded-lg p-4 border-2 border-slate-200">
+                    <div key={m.machine} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <div className="font-bold text-lg text-slate-900">{m.machine}</div>
@@ -1409,14 +1583,14 @@ export default function App() {
             </div>
 
             {/* FILTERS */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+            <div className="bg-white rounded-lg border border-slate-200 p-4">
               <div className="flex gap-4 items-end">
                 <div className="flex-1">
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Filter by Machine</label>
                   <select 
                     value={filterMachine} 
                     onChange={e => setFilterMachine(e.target.value)}
-                    className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
                   >
                     <option value="All">All Machines</option>
                     {MACHINES.map(m => <option key={m.id} value={m.id}>{m.name} — {m.fullName}</option>)}
@@ -1429,7 +1603,7 @@ export default function App() {
                       type="date" 
                       value={filterDate} 
                       onChange={e => setFilterDate(e.target.value)}
-                      className="flex-1 border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
+                      className="flex-1 border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
                     />
                     {filterDate && (
                       <button onClick={() => setFilterDate('')} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm">
@@ -1623,7 +1797,7 @@ export default function App() {
           <div className="space-y-4">
             {/* Material Needed Info Banner */}
             {view === 'materialneeded' && (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-5">
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                   <div className="text-3xl">📦</div>
                   <div className="flex-1">
@@ -1645,7 +1819,7 @@ export default function App() {
             )}
 
             {/* Search, Sort, and Filter Controls */}
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white rounded-lg border border-slate-200 p-4">
               <div className={`grid ${view === 'active' ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                 {/* Search */}
                 <div className="relative">
@@ -1655,7 +1829,7 @@ export default function App() {
                     placeholder="Search by customer, works order, or spec..."
                     value={searchFilter}
                     onChange={e => setSearchFilter(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2 border-2 border-slate-200 rounded-lg focus:border-amber-500 focus:outline-none"
+                    className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:border-amber-500 focus:outline-none"
                   />
                   {searchFilter && (
                     <button 
@@ -1671,7 +1845,7 @@ export default function App() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value)}
-                    className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none"
                   >
                     <option value="planningDate">Sort by Planning Date</option>
                     <option value="customer">Sort by Customer</option>
@@ -1685,7 +1859,7 @@ export default function App() {
                     <select
                       value={validationFilter}
                       onChange={e => setValidationFilter(e.target.value)}
-                      className="w-full border-2 border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none font-semibold"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none font-semibold"
                     >
                       <option value="all">All Orders ({active.length})</option>
                       <option value="materialpurchasing">
@@ -1742,7 +1916,7 @@ export default function App() {
             </div>
 
             {display.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-12 text-center">
+              <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
                 <Package size={48} className="mx-auto text-slate-300 mb-4" />
                 <div className="text-xl font-semibold text-slate-600">No orders found</div>
                 <div className="text-slate-500 mt-2">
@@ -1751,7 +1925,7 @@ export default function App() {
               </div>
             ) : (
               display.map(order => (
-                <div key={order.id} className="bg-white rounded-xl shadow-md overflow-hidden border-2 border-slate-200 hover:border-amber-500 transition-colors">
+                <div key={order.id} className="bg-white rounded-lg border border-slate-200 hover:border-slate-400 hover:shadow-sm transition-all">
                   {/* Order Header - Always Visible */}
                   <div 
                     onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
@@ -1858,7 +2032,7 @@ export default function App() {
                             onChange={e => updateEditingOrder(order.id, 'spec', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="Specification"
-                            className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1869,7 +2043,7 @@ export default function App() {
                             onChange={e => updateEditingOrder(order.id, 'quantity', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="0"
-                            className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1877,7 +2051,7 @@ export default function App() {
                           <select
                             value={order.machineId || ''}
                             onChange={e => updateOrder(order.id, { machineId: parseInt(e.target.value) || null })}
-                            className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
                           >
                             <option value="">Not Assigned</option>
                             {MACHINES.map(m => (
@@ -1904,7 +2078,7 @@ export default function App() {
                                   checked 
                                     ? 'border-green-500 bg-green-50 shadow-sm' 
                                     : highlightMaterial
-                                    ? 'border-amber-500 bg-amber-50 shadow-md ring-2 ring-amber-300'
+                                    ? 'border-amber-500 bg-amber-50 shadow-sm ring-2 ring-amber-300'
                                     : 'border-slate-200 bg-white hover:border-slate-300'
                                 }`}
                               >
@@ -1939,7 +2113,7 @@ export default function App() {
                           onBlur={() => saveEditingOrder(order.id)}
                           placeholder="Add notes about this order..."
                           rows={3}
-                          className="w-full border-2 border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none resize-none"
+                          className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none resize-none"
                         />
                       </div>
                     </div>
@@ -1954,7 +2128,7 @@ export default function App() {
       {/* Toast Notification */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
-          <div className={`rounded-xl shadow-2xl p-4 min-w-[300px] max-w-md border-2 ${
+          <div className={`rounded-xl shadow-sm p-4 min-w-[300px] max-w-md border-2 ${
             toast.type === 'success' ? 'bg-green-50 border-green-500 text-green-900' :
             toast.type === 'error' ? 'bg-red-50 border-red-500 text-red-900' :
             'bg-blue-50 border-blue-500 text-blue-900'
@@ -1983,7 +2157,7 @@ export default function App() {
       {/* Clear All Orders Confirmation Modal */}
       {showClearModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
+          <div className="bg-white rounded-xl border border-slate-200 max-w-lg w-full p-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 p-3 rounded-full">
                 <AlertTriangle className="text-red-600" size={32} />
@@ -2014,7 +2188,7 @@ export default function App() {
                 value={clearConfirmText}
                 onChange={e => setClearConfirmText(e.target.value)}
                 placeholder="Type DELETE ALL"
-                className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 focus:border-red-500 focus:outline-none text-lg font-mono"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-red-500 focus:outline-none text-lg font-mono"
                 autoFocus
               />
             </div>
@@ -2039,7 +2213,7 @@ export default function App() {
                 disabled={clearConfirmText !== 'DELETE ALL'}
                 className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
                   clearConfirmText === 'DELETE ALL'
-                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg cursor-pointer'
+                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-sm cursor-pointer'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 }`}
               >
