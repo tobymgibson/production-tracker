@@ -116,9 +116,11 @@ export default function App() {
     const isOver = totalAfterAdd > availableCapacity * 1.05;
     const isNear = totalAfterAdd >= availableCapacity * 0.9 && !isOver;
     const suggestedDates = [];
-    for (let i = 1; i <= 21; i++) {
+    for (let i = 1; i <= 28; i++) {
       const d = new Date(_nopdate + 'T00:00:00');
       d.setDate(d.getDate() + i);
+      const dayOfWeek = d.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
       const dateStr = d.toISOString().split('T')[0];
       const usedOnDay = orders
         .filter(o => o.machineId === _nomid && o.planningDate === dateStr && o.status !== 'Complete' && o.status !== 'Deleted')
