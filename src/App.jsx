@@ -1,7 +1,3 @@
-
-App · JSX
-Copy
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, Upload, Lock, Eye, EyeOff, AlertTriangle, TrendingUp, Calendar, Package, Search, X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { firebaseService } from './firebase-service.js';
