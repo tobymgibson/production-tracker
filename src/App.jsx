@@ -55,7 +55,7 @@ const STATUS_COLORS = {
   'Complete': 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'Deleted': 'bg-red-50 text-red-600 border-red-200',
   'On Hold': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  'Urgent': 'bg-orange-100 text-orange-800 border-orange-300'
+  'Urgent': 'bg-yellow-100 text-yellow-800 border-yellow-300'
 };
 
 export default function App() {
@@ -846,14 +846,14 @@ export default function App() {
 
   if (!auth) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-slate-950 dark:bg-black flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="mb-8 text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-amber-500 rounded-xl mb-5">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-400 rounded-xl mb-5">
               <Lock size={22} className="text-white" />
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">Production Tracker</h1>
-            <p className="text-slate-500 text-sm mt-1">Corrugated Sheet Plant</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Weedon Corrugated Products</p>
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
             <div className="relative mb-4">
@@ -863,17 +863,17 @@ export default function App() {
                 onChange={e => setPwd(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && pwd === 'CorrugatedTracker2026!' && setAuth(true)}
                 placeholder="Enter password"
-                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 pr-12 focus:border-amber-500 focus:outline-none transition-colors placeholder-slate-500 text-sm"
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 pr-12 focus:border-yellow-400 focus:outline-none transition-colors placeholder-slate-500 text-sm"
               />
               <button
                 onClick={() => setShowPwd(!showPwd)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-300 transition-colors">
                 {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             <button
               onClick={() => pwd === 'CorrugatedTracker2026!' ? setAuth(true) : alert('Incorrect password')}
-              className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 py-3 rounded-xl font-semibold transition-all text-sm tracking-wide"
+              className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-950 py-3 rounded-xl font-semibold transition-all text-sm tracking-wide"
             >
               Sign In
             </button>
@@ -938,18 +938,18 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800 dark:bg-slate-900">
       {/* Header */}
-      <div className="bg-slate-950 text-white">
+      <div className="bg-slate-950 dark:bg-black text-white border-b border-slate-800 dark:border-slate-950">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-slate-950 font-black text-xs">PT</span>
               </div>
               <div>
                 <h1 className="text-base font-bold tracking-tight leading-none">Production Tracker</h1>
-                <p className="text-xs text-slate-500 leading-none mt-0.5">Corrugated Sheet Plant</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-none mt-0.5">Corrugated Sheet Plant</p>
               </div>
             </div>
             <div className="flex gap-2 items-center">
@@ -968,12 +968,12 @@ export default function App() {
               )}
               {orders.length === 0 && machines.length === DEFAULT_MACHINES.length && (
                 <button onClick={initializeFirebase}
-                  className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
+                  className="flex items-center gap-1.5 bg-yellow-500 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
                   Initialise
                 </button>
               )}
               <button onClick={() => { initNewOrder(); setView('neworder'); }}
-                className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg transition-colors font-semibold text-sm">
+                className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-300 text-slate-950 px-4 py-2 rounded-lg transition-colors font-semibold text-sm">
                 <Plus size={15} />New Order
               </button>
               <button onClick={importData}
@@ -994,7 +994,7 @@ export default function App() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-0.5 py-1.5">
             {[
@@ -1014,10 +1014,10 @@ export default function App() {
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
                   view === tab.id
-                    ? 'bg-slate-950 text-white'
+                    ? 'bg-slate-950 dark:bg-yellow-500 text-white dark:text-slate-900 dark:text-white'
                     : tab.alert && tab.count > 0
-                    ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'text-yellow-700 bg-yellow-50 hover:bg-yellow-100'
+                    : 'text-slate-600 dark:text-slate-300 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-700 hover:text-slate-900 dark:text-white dark:hover:text-white'
                 }`}
               >
                 {tab.icon && <tab.icon size={14} />}
@@ -1025,8 +1025,8 @@ export default function App() {
                 {tab.count !== undefined && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
                     view === tab.id ? 'bg-white/20 text-white' :
-                    tab.alert && tab.count > 0 ? 'bg-amber-200 text-amber-800' :
-                    'bg-slate-200 text-slate-600'
+                    tab.alert && tab.count > 0 ? 'bg-yellow-200 text-yellow-800' :
+                    'bg-slate-200 text-slate-600 dark:text-slate-300'
                   }`}>{tab.count}</span>
                 )}
               </button>
@@ -1039,11 +1039,11 @@ export default function App() {
         {/* NEW ORDER VIEW */}
         {view === 'neworder' && (
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Create New Order</h2>
-                  <p className="text-slate-500 text-sm mt-0.5">Fill in the order details below</p>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Create New Order</h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">Fill in the order details below</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -1054,7 +1054,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={cancelNewOrder}
-                    className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg font-semibold transition-colors text-sm"
+                    className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-lg font-semibold transition-colors text-sm"
                   >
                     Cancel
                   </button>
@@ -1064,11 +1064,11 @@ export default function App() {
               {newOrder && (
                 <div className="p-6 space-y-5">
                   {/* Basic Information */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Basic Information</h3>
+                  <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 rounded-xl p-5">
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Basic Information</h3>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
                           Customer Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -1076,48 +1076,48 @@ export default function App() {
                           value={newOrder.customer}
                           onChange={e => setNewOrder({...newOrder, customer: e.target.value})}
                           placeholder="Enter customer name"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none text-lg"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none text-lg"
                           autoFocus
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Works Order Number</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Works Order Number</label>
                         <input
                           type="text"
                           value={newOrder.worksOrder || ''}
                           onChange={e => setNewOrder({...newOrder, worksOrder: e.target.value})}
                           placeholder="e.g., WO-2024-001"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Description</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Description</label>
                         <input
                           type="text"
                           value={newOrder.description}
                           onChange={e => setNewOrder({...newOrder, description: e.target.value})}
                           placeholder="Order description"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Specification</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Specification</label>
                         <input
                           type="text"
                           value={newOrder.spec}
                           onChange={e => setNewOrder({...newOrder, spec: e.target.value})}
                           placeholder="e.g., C-Flute, 200gsm"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Quantity (feeds)</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Quantity (feeds)</label>
                         <input
                           type="text"
                           value={newOrder.quantity}
                           onChange={e => setNewOrder({...newOrder, quantity: e.target.value})}
                           placeholder="e.g., 50000"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1125,14 +1125,14 @@ export default function App() {
 
                   {/* Production Details */}
                   <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Production Details</h3>
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Production Details</h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Machine Assignment</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Machine Assignment</label>
                         <select
                           value={newOrder.machineId || ''}
                           onChange={e => setNewOrder({...newOrder, machineId: parseInt(e.target.value) || null})}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         >
                           <option value="">Select Machine</option>
                           {MACHINES.map(m => (
@@ -1143,21 +1143,21 @@ export default function App() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Planning Date</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Planning Date</label>
                         <input
                           type="date"
                           value={newOrder.planningDate}
                           onChange={e => setNewOrder({...newOrder, planningDate: e.target.value})}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Ship Date</label>
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Ship Date</label>
                         <input
                           type="date"
                           value={newOrder.shipsDate}
                           onChange={e => setNewOrder({...newOrder, shipsDate: e.target.value})}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1166,13 +1166,13 @@ export default function App() {
                     {capacityWarning && (
                       <div className={`mt-4 rounded-xl border-2 overflow-hidden ${
                         capacityWarning.isOver ? 'border-red-400 bg-red-50' :
-                        capacityWarning.isNear ? 'border-orange-400 bg-orange-50' :
+                        capacityWarning.isNear ? 'border-yellow-400 bg-yellow-50' :
                         'border-green-400 bg-green-50'
                       }`}>
                         {/* Header */}
                         <div className={`px-5 py-3 flex items-center justify-between ${
                           capacityWarning.isOver ? 'bg-red-500' :
-                          capacityWarning.isNear ? 'bg-orange-500' :
+                          capacityWarning.isNear ? 'bg-yellow-500' :
                           'bg-green-500'
                         } text-white`}>
                           <div className="flex items-center gap-2 font-bold">
@@ -1191,7 +1191,7 @@ export default function App() {
                           <div className="w-full h-7 bg-slate-200 rounded-lg overflow-hidden flex mb-2">
                             {/* Existing orders */}
                             <div
-                              className="h-full bg-slate-500 flex items-center justify-center text-xs text-white font-semibold"
+                              className="h-full bg-slate-50 dark:bg-slate-8000 flex items-center justify-center text-xs text-white font-semibold"
                               style={{ width: `${Math.min((capacityWarning.existingQty / capacityWarning.availableCapacity) * 100, 100)}%` }}
                             >
                               {(capacityWarning.existingQty / capacityWarning.availableCapacity) * 100 > 10 && 'Existing'}
@@ -1217,9 +1217,9 @@ export default function App() {
                           </div>
 
                           {/* Numbers row */}
-                          <div className="flex gap-4 text-xs text-slate-600 mb-3">
+                          <div className="flex gap-4 text-xs text-slate-600 dark:text-slate-300 mb-3">
                             <span className="flex items-center gap-1">
-                              <span className="w-2.5 h-2.5 bg-slate-500 rounded-sm inline-block"></span>
+                              <span className="w-2.5 h-2.5 bg-slate-50 dark:bg-slate-8000 rounded-sm inline-block"></span>
                               Existing: <b>{capacityWarning.existingQty.toLocaleString()}</b>
                             </span>
                             <span className={`flex items-center gap-1`}>
@@ -1246,7 +1246,7 @@ export default function App() {
                           {/* Suggested alternative dates */}
                           {(capacityWarning.isOver || capacityWarning.isNear) && capacityWarning.suggestedDates.length > 0 && (
                             <div className="mb-3">
-                              <div className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">
+                              <div className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-2">
                                 💡 Alternative dates with capacity available:
                               </div>
                               <div className="flex gap-2 flex-wrap">
@@ -1258,7 +1258,7 @@ export default function App() {
                                     className="flex items-center gap-2 bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 rounded-lg px-3 py-2 text-sm transition-all"
                                   >
                                     <span className="font-bold text-blue-700">{s.dayName}</span>
-                                    <span className="text-slate-500 text-xs">{s.remaining.toLocaleString()} available</span>
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs">{s.remaining.toLocaleString()} available</span>
                                   </button>
                                 ))}
                               </div>
@@ -1268,12 +1268,12 @@ export default function App() {
                           {/* Existing orders on this date */}
                           {capacityWarning.existingOrders.length > 0 && (
                             <details className="text-xs">
-                              <summary className="cursor-pointer text-slate-500 hover:text-slate-700 font-semibold mb-1">
+                              <summary className="cursor-pointer text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200 font-semibold mb-1">
                                 {capacityWarning.existingOrders.length} existing order{capacityWarning.existingOrders.length !== 1 ? 's' : ''} on this date
                               </summary>
                               <div className="mt-2 space-y-1 pl-2">
                                 {capacityWarning.existingOrders.map(o => (
-                                  <div key={o.id} className="flex justify-between text-slate-600 bg-white rounded px-3 py-1.5 border border-slate-200">
+                                  <div key={o.id} className="flex justify-between text-slate-600 dark:text-slate-300 bg-white rounded px-3 py-1.5 border border-slate-200">
                                     <span>{o.customer}{o.description ? ` — ${o.description}` : ''}</span>
                                     <span className="font-bold ml-4">{parseInt(String(o.quantity||'0').replace(/,/g,'')).toLocaleString()} feeds</span>
                                   </div>
@@ -1288,7 +1288,7 @@ export default function App() {
 
                   {/* Validations */}
                   <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Validation Checklist</h3>
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Validation Checklist</h3>
                     <div className="grid grid-cols-3 gap-3">
                       {VALIDATIONS.map(v => {
                         const key = v.toLowerCase().replace(/\s+/g, '');
@@ -1314,7 +1314,7 @@ export default function App() {
                               })}
                               className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
                             />
-                            <span className={`text-sm ${checked ? 'font-semibold text-green-900' : 'text-slate-700'}`}>
+                            <span className={`text-sm ${checked ? 'font-semibold text-green-900' : 'text-slate-700 dark:text-slate-200'}`}>
                               {v}
                             </span>
                           </label>
@@ -1325,13 +1325,13 @@ export default function App() {
 
                   {/* Notes */}
                   <div className="border border-slate-200 rounded-xl p-6">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Additional Notes</h3>
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Additional Notes</h3>
                     <textarea
                       value={newOrder.notes}
                       onChange={e => setNewOrder({...newOrder, notes: e.target.value})}
                       placeholder="Add any additional notes or special instructions for this order..."
                       rows={4}
-                      className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-amber-500 focus:outline-none resize-none"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none resize-none"
                     />
                   </div>
 
@@ -1345,7 +1345,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={cancelNewOrder}
-                      className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-4 rounded-lg font-semibold transition-colors"
+                      className="bg-slate-200 hover:bg-slate-300 text-slate-700 dark:text-slate-200 px-6 py-4 rounded-lg font-semibold transition-colors"
                     >
                       Cancel
                     </button>
@@ -1361,21 +1361,21 @@ export default function App() {
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-blue-500 p-4">
-                <div className="text-sm text-slate-600 font-semibold mb-1">Active Orders</div>
-                <div className="text-2xl font-bold text-slate-900">{analytics.totalActive}</div>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-blue-500 p-4">
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-semibold mb-1">Active Orders</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{analytics.totalActive}</div>
               </div>
-              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-emerald-500 p-4">
-                <div className="text-sm text-slate-600 font-semibold mb-1">Completed</div>
-                <div className="text-2xl font-bold text-slate-900">{analytics.totalCompleted}</div>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-emerald-500 p-4">
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-semibold mb-1">Completed</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{analytics.totalCompleted}</div>
               </div>
-              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-amber-500 p-4">
-                <div className="text-sm text-slate-600 font-semibold mb-1">Avg Lead Time</div>
-                <div className="text-2xl font-bold text-slate-900">{analytics.avgLeadTime} <span className="text-lg text-slate-600">days</span></div>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-yellow-400 p-4">
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-semibold mb-1">Avg Lead Time</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{analytics.avgLeadTime} <span className="text-lg text-slate-600 dark:text-slate-300">days</span></div>
               </div>
-              <div className="bg-white rounded-lg border border-slate-200 border-l-4 border-l-red-500 p-4">
-                <div className="text-sm text-slate-600 font-semibold mb-1">Capacity Alerts</div>
-                <div className="text-2xl font-bold text-slate-900">{analytics.overCapacityDays}</div>
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-red-500 p-4">
+                <div className="text-sm text-slate-600 dark:text-slate-300 font-semibold mb-1">Capacity Alerts</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{analytics.overCapacityDays}</div>
               </div>
             </div>
 
@@ -1402,10 +1402,10 @@ export default function App() {
                   )}
                   {analytics.bottlenecks.map(([validation, stats]) => (
                     <div key={validation} className="bg-white rounded-lg p-4 border-l-4 border-orange-500">
-                      <div className="font-semibold text-orange-900">
+                      <div className="font-semibold text-yellow-900">
                         📋 {validation}: Only {stats.percentage}% complete ({stats.completed}/{stats.total} orders)
                       </div>
-                      <div className="text-sm text-orange-700 mt-1">
+                      <div className="text-sm text-yellow-700 mt-1">
                         This validation is blocking progress on multiple orders
                       </div>
                     </div>
@@ -1426,10 +1426,10 @@ export default function App() {
             )}
 
             {/* 14-Day Forecast */}
-            <div className="bg-white rounded-lg border border-slate-200 p-5">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">14-Day Capacity Forecast</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-5">
+              <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">14-Day Capacity Forecast</h3>
               {analytics.forecast.length === 0 ? (
-                <div className="text-center py-8 text-slate-500">
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                   No scheduled production in the next 14 days
                 </div>
               ) : (
@@ -1437,19 +1437,19 @@ export default function App() {
                   {analytics.forecast.slice(0, 7).map((f, idx) => (
                     <div key={idx} className={`p-4 rounded-lg border-2 ${
                       f.isOver ? 'border-red-500 bg-red-50' : 
-                      f.isNear ? 'border-orange-500 bg-orange-50' : 
-                      'border-slate-200 bg-slate-50'
+                      f.isNear ? 'border-orange-500 bg-yellow-50' : 
+                      'border-slate-200 bg-slate-50 dark:bg-slate-800'
                     }`}>
                       <div className="flex justify-between items-center mb-2">
                         <div>
                           <span className="font-bold">
                             {new Date(f.date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}
                           </span>
-                          <span className="ml-3 text-slate-600">{f.machine}</span>
+                          <span className="ml-3 text-slate-600 dark:text-slate-300">{f.machine}</span>
                         </div>
-                        <div className={`font-bold text-right ${f.isOver ? 'text-red-600' : f.isNear ? 'text-orange-600' : 'text-slate-700'}`}>
+                        <div className={`font-bold text-right ${f.isOver ? 'text-red-600' : f.isNear ? 'text-yellow-600' : 'text-slate-700 dark:text-slate-200'}`}>
                           <div>{f.nonStockUsed.toLocaleString()} / {f.availableCapacity.toLocaleString()} available</div>
-                          <div className="text-xs font-normal text-slate-500">
+                          <div className="text-xs font-normal text-slate-500 dark:text-slate-400">
                             ({f.percentageOfAvailable}% of available • {f.percentageOfTotal}% of total)
                           </div>
                         </div>
@@ -1466,7 +1466,7 @@ export default function App() {
                         {/* Non-stock orders (on top of stock) */}
                         <div 
                           className={`absolute h-4 rounded-full transition-all ${
-                            f.isOver ? 'bg-red-600' : f.isNear ? 'bg-orange-500' : 'bg-blue-500'
+                            f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-500' : 'bg-blue-500'
                           }`}
                           style={{ 
                             left: `${(f.stockReserved / f.totalCapacity) * 100}%`,
@@ -1477,14 +1477,14 @@ export default function App() {
                       </div>
                       
                       {/* Legend */}
-                      <div className="flex justify-between text-xs text-slate-600 mb-2">
+                      <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 mb-2">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
                             <div className="w-3 h-3 bg-slate-400 rounded"></div>
                             <span>Stock: {f.stockReserved.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className={`w-3 h-3 rounded ${f.isOver ? 'bg-red-600' : f.isNear ? 'bg-orange-500' : 'bg-blue-500'}`}></div>
+                            <div className={`w-3 h-3 rounded ${f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
                             <span>Non-Stock: {f.nonStockUsed.toLocaleString()}</span>
                           </div>
                         </div>
@@ -1508,25 +1508,25 @@ export default function App() {
             </div>
 
             {/* Machine Utilisation */}
-            <div className="bg-white rounded-lg border border-slate-200 p-5">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilisation (All Orders)</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-5">
+              <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Machine Utilisation (All Orders)</h3>
               <div className="grid grid-cols-2 gap-4">
                 {analytics.machineUtil.map(m => {
                   const utilisationColor = m.utilisationPercent >= 100 ? 'text-red-600' : 
-                                          m.utilisationPercent >= 90 ? 'text-orange-600' : 
-                                          'text-slate-900';
+                                          m.utilisationPercent >= 90 ? 'text-yellow-600' : 
+                                          'text-slate-900 dark:text-white';
                   return (
-                    <div key={m.machine} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div key={m.machine} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <div className="font-bold text-lg text-slate-900">{m.machine}</div>
-                          <div className="text-xs text-slate-500">{m.fullName}</div>
+                          <div className="font-bold text-lg text-slate-900 dark:text-white">{m.machine}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{m.fullName}</div>
                         </div>
                         <div className={`text-2xl font-bold ${utilisationColor}`}>
                           {m.utilisationPercent}%
                         </div>
                       </div>
-                      <div className="text-sm text-slate-600 mt-2 space-y-1">
+                      <div className="text-sm text-slate-600 dark:text-slate-300 mt-2 space-y-1">
                         <div>{m.orders} order{m.orders !== 1 ? 's' : ''} across {m.scheduledDays} day{m.scheduledDays !== 1 ? 's' : ''}</div>
                         <div className="font-semibold">
                           Avg {m.avgPerDay.toLocaleString()}/day · Cap {m.availableCapacity.toLocaleString()}/day
@@ -1536,7 +1536,7 @@ export default function App() {
                         <div 
                           className={`h-2 rounded-full transition-all ${
                             m.utilisationPercent >= 100 ? 'bg-red-600' : 
-                            m.utilisationPercent >= 90 ? 'bg-orange-500' : 
+                            m.utilisationPercent >= 90 ? 'bg-yellow-500' : 
                             'bg-blue-500'
                           }`}
                           style={{ width: `${Math.min(m.utilisationPercent, 100)}%` }}
@@ -1569,26 +1569,26 @@ export default function App() {
                 return (
                   <div key={machine.id} className={`rounded-xl p-4 border-2 ${
                     isOver ? 'bg-red-50 border-red-400' :
-                    isNear ? 'bg-orange-50 border-orange-400' :
+                    isNear ? 'bg-yellow-50 border-yellow-400' :
                     'bg-white border-slate-200'
                   }`}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <div className="text-lg font-bold text-slate-900">{machine.name}</div>
-                        <div className="text-xs text-slate-500">{machine.fullName}</div>
+                        <div className="text-lg font-bold text-slate-900 dark:text-white">{machine.name}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{machine.fullName}</div>
                       </div>
                       <div className={`text-2xl font-black ${isOver ? 'text-red-600' : isNear ? 'text-orange-500' : 'text-blue-600'}`}>
                         {utilPct}%
                       </div>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-3 mb-3">
-                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-orange-500' : 'bg-blue-500'}`}
+                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}
                         style={{ width: `${Math.min(utilPct, 100)}%` }} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Avg/Day</div>
-                        <div className="font-bold text-slate-800">{Math.round(avgPerDay).toLocaleString()}</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-100">{Math.round(avgPerDay).toLocaleString()}</div>
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Available</div>
@@ -1596,15 +1596,15 @@ export default function App() {
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Stock Alloc.</div>
-                        <div className="font-bold text-slate-600">{stockReserved.toLocaleString()}</div>
+                        <div className="font-bold text-slate-600 dark:text-slate-300">{stockReserved.toLocaleString()}</div>
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Days Booked</div>
-                        <div className="font-bold text-slate-800">{scheduledDays}</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-100">{scheduledDays}</div>
                       </div>
                     </div>
                     {isOver && <div className="mt-2 text-xs font-bold text-red-600 bg-red-100 rounded-lg px-2 py-1 text-center">⚠️ OVER CAPACITY</div>}
-                    {isNear && !isOver && <div className="mt-2 text-xs font-bold text-orange-600 bg-orange-100 rounded-lg px-2 py-1 text-center">⚡ NEAR CAPACITY</div>}
+                    {isNear && !isOver && <div className="mt-2 text-xs font-bold text-yellow-600 bg-yellow-100 rounded-lg px-2 py-1 text-center">⚡ NEAR CAPACITY</div>}
                     {!isOver && !isNear && <div className="mt-2 text-xs font-bold text-green-600 bg-green-100 rounded-lg px-2 py-1 text-center">✓ OK</div>}
                   </div>
                 );
@@ -1612,36 +1612,36 @@ export default function App() {
             </div>
 
             {/* FILTERS */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
               <div className="flex gap-4 items-end">
                 <div className="flex-1">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Filter by Machine</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Filter by Machine</label>
                   <select 
                     value={filterMachine} 
                     onChange={e => setFilterMachine(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none text-sm"
                   >
                     <option value="All">All Machines</option>
                     {MACHINES.map(m => <option key={m.id} value={m.id}>{m.name} — {m.fullName}</option>)}
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Filter by Date</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">Filter by Date</label>
                   <div className="flex gap-2">
                     <input 
                       type="date" 
                       value={filterDate} 
                       onChange={e => setFilterDate(e.target.value)}
-                      className="flex-1 border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none text-sm"
+                      className="flex-1 border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none text-sm"
                     />
                     {filterDate && (
-                      <button onClick={() => setFilterDate('')} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-sm">
+                      <button onClick={() => setFilterDate('')} className="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 rounded-lg transition-colors text-sm">
                         Clear
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-slate-600 border-l border-slate-200 pl-4">
+                <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 border-l border-slate-200 pl-4">
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-400 rounded-sm"></div>Stock</div>
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div>Non-Stock</div>
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-green-400 rounded-sm"></div>Available</div>
@@ -1696,7 +1696,7 @@ export default function App() {
                   {/* Machine Header */}
                   <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center font-black text-slate-900 text-sm">{machine.name}</div>
+                      <div className="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center font-black text-slate-900 dark:text-white text-sm">{machine.name}</div>
                       <div>
                         <div className="font-bold text-white text-lg">{machine.fullName}</div>
                         <div className="text-slate-400 text-xs">
@@ -1722,7 +1722,7 @@ export default function App() {
                       const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
 
                       return (
-                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-orange-50' : 'bg-white'}`}>
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-yellow-50' : 'bg-white'}`}>
                           
                           {/* Row top: date + capacity bar + numbers */}
                           <div className="flex gap-4 items-center mb-3">
@@ -1730,28 +1730,28 @@ export default function App() {
                             {/* Date badge */}
                             <div className={`flex-shrink-0 w-16 text-center rounded-lg py-2 border-2 ${
                               day.isOver ? 'bg-red-100 border-red-300' :
-                              day.isNear ? 'bg-orange-100 border-orange-300' :
-                              'bg-slate-50 border-slate-200'
+                              day.isNear ? 'bg-yellow-100 border-yellow-300' :
+                              'bg-slate-50 dark:bg-slate-800 border-slate-200'
                             }`}>
                               <div className={`text-xs font-bold uppercase tracking-wide ${day.isOver ? 'text-red-500' : day.isNear ? 'text-orange-500' : 'text-slate-400'}`}>{dayName}</div>
-                              <div className={`text-2xl font-black leading-none ${day.isOver ? 'text-red-700' : day.isNear ? 'text-orange-700' : 'text-slate-800'}`}>{dayNum}</div>
+                              <div className={`text-2xl font-black leading-none ${day.isOver ? 'text-red-700' : day.isNear ? 'text-yellow-700' : 'text-slate-800 dark:text-slate-100'}`}>{dayNum}</div>
                               <div className="text-xs text-slate-400 mt-0.5">{monthName}</div>
                             </div>
 
                             {/* Capacity bar area */}
                             <div className="flex-1">
-                              <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                                 <span>{day.orders.length} order{day.orders.length !== 1 ? 's' : ''}</span>
-                                <span className={`font-bold ${day.isOver ? 'text-red-600' : day.isNear ? 'text-orange-600' : 'text-slate-600'}`}>
+                                <span className={`font-bold ${day.isOver ? 'text-red-600' : day.isNear ? 'text-yellow-600' : 'text-slate-600 dark:text-slate-300'}`}>
                                   {day.percentageOfAvailable}% of available
                                 </span>
                               </div>
                               {/* Stacked capacity bar */}
-                              <div className="w-full h-8 bg-slate-100 rounded-lg overflow-hidden flex">
+                              <div className="w-full h-8 bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden flex">
                                 <div className="h-full bg-slate-400 flex items-center justify-center text-xs text-white font-semibold" style={{ width: `${stockPct}%` }}>
                                   {stockPct > 8 && 'Stock'}
                                 </div>
-                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-orange-500' : 'bg-blue-500'}`} style={{ width: `${nonStockPct}%` }}>
+                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`} style={{ width: `${nonStockPct}%` }}>
                                   {nonStockPct > 8 && day.nonStockUsed.toLocaleString()}
                                 </div>
                                 <div className="h-full bg-green-200 flex items-center justify-center text-xs text-green-700 font-semibold" style={{ width: `${remainPct}%` }}>
@@ -1761,16 +1761,16 @@ export default function App() {
                               {/* Numbers below bar */}
                               <div className="flex gap-3 mt-1.5 text-xs">
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 bg-slate-400 rounded-sm inline-block"></span>Stock: <b>{day.stockReserved.toLocaleString()}</b></span>
-                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-orange-500' : 'bg-blue-500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
+                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-sm inline-block"></span>Remaining: <b className="text-green-700">{day.remaining.toLocaleString()}</b></span>
-                                <span className="ml-auto text-slate-400">Total: <b className="text-slate-700">{day.totalCapacity.toLocaleString()}</b></span>
+                                <span className="ml-auto text-slate-400">Total: <b className="text-slate-700 dark:text-slate-200">{day.totalCapacity.toLocaleString()}</b></span>
                               </div>
                             </div>
 
                             {/* Status badge */}
                             <div className={`flex-shrink-0 w-20 text-center rounded-lg py-3 ${
                               day.isOver ? 'bg-red-500 text-white' :
-                              day.isNear ? 'bg-orange-500 text-white' :
+                              day.isNear ? 'bg-yellow-500 text-white' :
                               'bg-green-100 text-green-700'
                             }`}>
                               <div className="text-xl font-black">{day.percentageOfAvailable}%</div>
@@ -1796,17 +1796,17 @@ export default function App() {
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${day.isOver ? 'bg-red-400' : day.isNear ? 'bg-orange-400' : 'bg-blue-400'}`}></div>
                                   <div className="min-w-0">
-                                    <div className="font-semibold text-slate-900 truncate">{o.customer}</div>
-                                    <div className="text-xs text-slate-500 truncate">{o.description}{o.worksOrder && ` · ${o.worksOrder}`}</div>
+                                    <div className="font-semibold text-slate-900 dark:text-white truncate">{o.customer}</div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{o.description}{o.worksOrder && ` · ${o.worksOrder}`}</div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-4 flex-shrink-0 ml-4">
-                                  {o.spec && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">{o.spec}</span>}
+                                  {o.spec && <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-mono">{o.spec}</span>}
                                   <div className="text-right">
-                                    <div className="font-bold text-slate-900">{parseInt(String(o.quantity||'0').replace(/,/g,'')).toLocaleString()}</div>
+                                    <div className="font-bold text-slate-900 dark:text-white">{parseInt(String(o.quantity||'0').replace(/,/g,'')).toLocaleString()}</div>
                                     <div className="text-xs text-slate-400">feeds</div>
                                   </div>
-                                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${STATUS_COLORS[o.status] || 'bg-slate-100 text-slate-600'}`}>{o.status}</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${STATUS_COLORS[o.status] || 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{o.status}</span>
                                 </div>
                               </div>
                             ))}
@@ -1826,19 +1826,19 @@ export default function App() {
           <div className="space-y-4">
             {/* Material Needed Info Banner */}
             {view === 'materialneeded' && (
-              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5">
+              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                   <div className="text-3xl">📦</div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-amber-900 mb-1">Material Purchasing Queue</h3>
-                    <p className="text-amber-800 mb-3">
+                    <p className="text-yellow-800 mb-3">
                       These orders need materials to be purchased. Check the "Material Purchasing" box when materials have been ordered.
                     </p>
-                    <div className="bg-white rounded-lg p-3 border border-amber-200">
+                    <div className="bg-white rounded-lg p-3 border border-yellow-200">
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                          <span className="font-semibold text-slate-700">Showing {materialNeeded.length} order{materialNeeded.length !== 1 ? 's' : ''} requiring material purchasing</span>
+                          <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">Showing {materialNeeded.length} order{materialNeeded.length !== 1 ? 's' : ''} requiring material purchasing</span>
                         </div>
                       </div>
                     </div>
@@ -1848,7 +1848,7 @@ export default function App() {
             )}
 
             {/* Search, Sort, and Filter Controls */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
               <div className={`grid ${view === 'active' ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                 {/* Search */}
                 <div className="relative">
@@ -1858,12 +1858,12 @@ export default function App() {
                     placeholder="Search by customer, works order, or spec..."
                     value={searchFilter}
                     onChange={e => setSearchFilter(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:border-amber-500 focus:outline-none"
+                    className="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:border-yellow-400 focus:outline-none"
                   />
                   {searchFilter && (
                     <button 
                       onClick={() => setSearchFilter('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300">
                       <X size={20} />
                     </button>
                   )}
@@ -1874,7 +1874,7 @@ export default function App() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-yellow-400 focus:outline-none"
                   >
                     <option value="planningDate">Sort by Planning Date</option>
                     <option value="customer">Sort by Customer</option>
@@ -1888,7 +1888,7 @@ export default function App() {
                     <select
                       value={validationFilter}
                       onChange={e => setValidationFilter(e.target.value)}
-                      className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-amber-500 focus:outline-none font-semibold"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-2 focus:border-yellow-400 focus:outline-none font-semibold"
                     >
                       <option value="all">All Orders ({active.length})</option>
                       <option value="materialpurchasing">
@@ -1917,7 +1917,7 @@ export default function App() {
                     </div>
                   )}
                   {validationFilter === 'materialpurchasing' && (
-                    <div className="flex items-center gap-2 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
                       📦 Material Purchasing Needed
                       <button onClick={() => setValidationFilter('all')} className="hover:text-amber-900">
                         <X size={14} />
@@ -1925,9 +1925,9 @@ export default function App() {
                     </div>
                   )}
                   {validationFilter === 'pending' && (
-                    <div className="flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
                       ⏳ Pending Validations
-                      <button onClick={() => setValidationFilter('all')} className="hover:text-orange-900">
+                      <button onClick={() => setValidationFilter('all')} className="hover:text-yellow-900">
                         <X size={14} />
                       </button>
                     </div>
@@ -1937,7 +1937,7 @@ export default function App() {
                       setSearchFilter('');
                       setValidationFilter('all');
                     }}
-                    className="text-slate-600 hover:text-slate-900 text-sm font-semibold underline">
+                    className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white text-sm font-semibold underline">
                     Clear all filters
                   </button>
                 </div>
@@ -1945,25 +1945,25 @@ export default function App() {
             </div>
 
             {display.length === 0 ? (
-              <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
+              <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-12 text-center">
                 <Package size={48} className="mx-auto text-slate-300 mb-4" />
-                <div className="text-xl font-semibold text-slate-600">No orders found</div>
-                <div className="text-slate-500 mt-2">
+                <div className="text-xl font-semibold text-slate-600 dark:text-slate-300">No orders found</div>
+                <div className="text-slate-500 dark:text-slate-400 mt-2">
                   {searchFilter ? 'Try adjusting your search' : 'Create a new order to get started'}
                 </div>
               </div>
             ) : (
               display.map(order => (
-                <div key={order.id} className="bg-white rounded-lg border border-slate-200 hover:border-slate-400 hover:shadow-sm transition-all">
+                <div key={order.id} className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-400 hover:shadow-sm transition-all">
                   {/* Order Header - Always Visible */}
                   <div 
                     onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                    className="p-5 cursor-pointer hover:bg-slate-50 transition-colors"
+                    className="p-5 cursor-pointer hover:bg-slate-50 dark:bg-slate-800 transition-colors"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 grid grid-cols-5 gap-4">
                         <div>
-                          <div className="text-xs text-slate-500 font-semibold mb-1">CUSTOMER</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">CUSTOMER</div>
                           <input
                             type="text"
                             value={editingOrder[order.id]?.customer ?? order.customer ?? ''}
@@ -1974,11 +1974,11 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Customer name"
-                            className="font-bold text-slate-900 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-amber-500 focus:outline-none px-1 py-1"
+                            className="font-bold text-slate-900 dark:text-white w-full border-b-2 border-transparent hover:border-slate-200 focus:border-yellow-400 focus:outline-none px-1 py-1"
                           />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-500 font-semibold mb-1">WORKS ORDER</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">WORKS ORDER</div>
                           <input
                             type="text"
                             value={editingOrder[order.id]?.worksOrder ?? order.worksOrder ?? ''}
@@ -1989,11 +1989,11 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Works order #"
-                            className="text-slate-700 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-amber-500 focus:outline-none px-1 py-1"
+                            className="text-slate-700 dark:text-slate-200 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-yellow-400 focus:outline-none px-1 py-1"
                           />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-500 font-semibold mb-1">DESCRIPTION</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">DESCRIPTION</div>
                           <input
                             type="text"
                             value={editingOrder[order.id]?.description ?? order.description ?? ''}
@@ -2004,11 +2004,11 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Order description"
-                            className="text-slate-700 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-amber-500 focus:outline-none px-1 py-1"
+                            className="text-slate-700 dark:text-slate-200 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-yellow-400 focus:outline-none px-1 py-1"
                           />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-500 font-semibold mb-1">PLANNING DATE</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">PLANNING DATE</div>
                           <input
                             type="date"
                             value={editingOrder[order.id]?.planningDate ?? order.planningDate ?? ''}
@@ -2018,11 +2018,11 @@ export default function App() {
                             }}
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
-                            className="text-slate-700 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-amber-500 focus:outline-none px-1 py-1"
+                            className="text-slate-700 dark:text-slate-200 w-full border-b-2 border-transparent hover:border-slate-200 focus:border-yellow-400 focus:outline-none px-1 py-1"
                           />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-500 font-semibold mb-1">STATUS</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold mb-1">STATUS</div>
                           <select
                             value={order.status || 'In Progress'}
                             onChange={e => {
@@ -2042,7 +2042,7 @@ export default function App() {
                       </div>
                       
                       {/* Expand Button */}
-                      <button className="ml-4 text-slate-400 hover:text-slate-600">
+                      <button className="ml-4 text-slate-400 hover:text-slate-600 dark:text-slate-300">
                         {expandedOrder === order.id ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                       </button>
                     </div>
@@ -2050,37 +2050,37 @@ export default function App() {
 
                   {/* Expanded Details */}
                   {expandedOrder === order.id && (
-                    <div className="border-t-2 border-slate-200 bg-slate-50 p-5 space-y-5">
+                    <div className="border-t-2 border-slate-200 bg-slate-50 dark:bg-slate-800 p-5 space-y-5">
                       {/* Additional Fields */}
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-xs text-slate-500 font-semibold mb-2">SPEC</label>
+                          <label className="block text-xs text-slate-500 dark:text-slate-400 font-semibold mb-2">SPEC</label>
                           <input
                             type="text"
                             value={editingOrder[order.id]?.spec ?? order.spec ?? ''}
                             onChange={e => updateEditingOrder(order.id, 'spec', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="Specification"
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-500 font-semibold mb-2">QUANTITY</label>
+                          <label className="block text-xs text-slate-500 dark:text-slate-400 font-semibold mb-2">QUANTITY</label>
                           <input
                             type="text"
                             value={editingOrder[order.id]?.quantity ?? order.quantity ?? ''}
                             onChange={e => updateEditingOrder(order.id, 'quantity', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="0"
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-500 font-semibold mb-2">MACHINE</label>
+                          <label className="block text-xs text-slate-500 dark:text-slate-400 font-semibold mb-2">MACHINE</label>
                           <select
                             value={order.machineId || ''}
                             onChange={e => updateOrder(order.id, { machineId: parseInt(e.target.value) || null })}
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
                           >
                             <option value="">Not Assigned</option>
                             {MACHINES.map(m => (
@@ -2092,7 +2092,7 @@ export default function App() {
 
                       {/* Validations */}
                       <div>
-                        <div className="text-sm font-bold text-slate-700 mb-3">VALIDATION CHECKLIST</div>
+                        <div className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">VALIDATION CHECKLIST</div>
                         <div className="grid grid-cols-4 gap-3">
                           {VALIDATIONS.map(v => {
                             const key = v.toLowerCase().replace(/\s+/g, '');
@@ -2107,7 +2107,7 @@ export default function App() {
                                   checked 
                                     ? 'border-green-500 bg-green-50 shadow-sm' 
                                     : highlightMaterial
-                                    ? 'border-amber-500 bg-amber-50 shadow-sm ring-2 ring-amber-300'
+                                    ? 'border-yellow-400 bg-yellow-50 shadow-sm ring-2 ring-amber-300'
                                     : 'border-slate-200 bg-white hover:border-slate-300'
                                 }`}
                               >
@@ -2122,7 +2122,7 @@ export default function App() {
                                     ? 'font-semibold text-green-900' 
                                     : highlightMaterial
                                     ? 'font-bold text-amber-900'
-                                    : 'text-slate-700'
+                                    : 'text-slate-700 dark:text-slate-200'
                                 }`}>
                                   {highlightMaterial && '📦 '}
                                   {v}
@@ -2135,14 +2135,14 @@ export default function App() {
 
                       {/* Notes */}
                       <div>
-                        <label className="block text-xs text-slate-500 font-semibold mb-2">NOTES</label>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 font-semibold mb-2">NOTES</label>
                         <textarea
                           value={editingOrder[order.id]?.notes ?? order.notes ?? ''}
                           onChange={e => updateEditingOrder(order.id, 'notes', e.target.value)}
                           onBlur={() => saveEditingOrder(order.id)}
                           placeholder="Add notes about this order..."
                           rows={3}
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-amber-500 focus:outline-none resize-none"
+                          className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none resize-none"
                         />
                       </div>
                     </div>
@@ -2175,7 +2175,7 @@ export default function App() {
               </div>
               <button 
                 onClick={() => setToast(null)}
-                className="text-slate-400 hover:text-slate-600">
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-300">
                 <X size={20} />
               </button>
             </div>
@@ -2186,7 +2186,7 @@ export default function App() {
       {/* Clear All Orders Confirmation Modal */}
       {showClearModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-xl border border-slate-200 max-w-lg w-full p-8">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 max-w-lg w-full p-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 p-3 rounded-full">
                 <AlertTriangle className="text-red-600" size={32} />
@@ -2209,7 +2209,7 @@ export default function App() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-bold text-slate-900 mb-2">
+              <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
                 Type <span className="bg-red-100 text-red-900 px-2 py-1 rounded font-mono">DELETE ALL</span> to confirm:
               </label>
               <input
@@ -2253,7 +2253,7 @@ export default function App() {
                   setShowClearModal(false);
                   setClearConfirmText('');
                 }}
-                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-semibold transition-colors"
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 dark:text-slate-200 rounded-xl font-semibold transition-colors"
               >
                 Cancel
               </button>
