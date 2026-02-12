@@ -1237,7 +1237,7 @@ export default function App() {
 
                           {/* Over capacity detail */}
                           {capacityWarning.isOver && (
-                            <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg px-4 py-2.5 mb-3 text-sm text-red-800 dark:text-red-200">
+                            <div className="bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-600 rounded-lg px-4 py-2.5 mb-3 text-sm text-red-800 dark:text-red-200">
                               <b>Over by {(capacityWarning.totalAfterAdd - Math.round(capacityWarning.availableCapacity * 1.05)).toLocaleString()} feeds</b>
                               {' '}after 5% tolerance — this order will exceed {capacityWarning.machine.name}'s available capacity on this date.
                             </div>
@@ -1492,7 +1492,7 @@ export default function App() {
                       </div>
 
                       {f.isOver && (
-                        <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-3">
+                        <div className="bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-600 rounded-lg p-3">
                           <div className="font-semibold text-red-900 dark:text-red-200">
                             ⚠️ OVER AVAILABLE CAPACITY (exceeds 105% tolerance)
                           </div>
@@ -1568,7 +1568,7 @@ export default function App() {
                 const isNear = utilPct >= 90 && utilPct <= 105;
                 return (
                   <div key={machine.id} className={`rounded-xl p-4 border-2 ${
-                    isOver ? 'bg-red-50 dark:bg-red-950/70 border-red-400 dark:border-red-500' :
+                    isOver ? 'bg-red-50 dark:bg-red-900 border-red-400 dark:border-red-600' :
                     isNear ? 'bg-yellow-50 dark:bg-yellow-950 border-yellow-400' :
                     'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                   }`}>
@@ -1722,14 +1722,14 @@ export default function App() {
                       const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
 
                       return (
-                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50 dark:bg-red-950/60' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-slate-800'}`}>
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50 dark:bg-red-900' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-slate-800'}`}>
                           
                           {/* Row top: date + capacity bar + numbers */}
                           <div className="flex gap-4 items-center mb-3">
                             
                             {/* Date badge */}
                             <div className={`flex-shrink-0 w-16 text-center rounded-lg py-2 border-2 ${
-                              day.isOver ? 'bg-red-100 border-red-300' :
+                              day.isOver ? 'bg-red-100 dark:bg-red-800 border-red-300 dark:border-red-600' :
                               day.isNear ? 'bg-yellow-100 dark:bg-yellow-700 border-yellow-300 dark:border-yellow-600' :
                               'bg-slate-50 dark:bg-slate-800 border-slate-200'
                             }`}>
@@ -1780,7 +1780,7 @@ export default function App() {
 
                           {/* Over capacity warning */}
                           {day.isOver && (
-                            <div className="flex items-center gap-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg px-4 py-2 mb-3 text-sm">
+                            <div className="flex items-center gap-3 bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-600 rounded-lg px-4 py-2 mb-3 text-sm">
                               <span className="text-red-600 dark:text-red-400 font-bold text-base">⚠️</span>
                               <span className="text-red-800 dark:text-red-200">
                                 <b>Over capacity by {(day.nonStockUsed - Math.round(day.availableCapacity * 1.05)).toLocaleString()} feeds</b>
