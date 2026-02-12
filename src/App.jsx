@@ -51,11 +51,11 @@ const VALIDATIONS = [
 ];
 
 const STATUS_COLORS = {
-  'In Progress': 'bg-blue-50 text-blue-700 border-blue-200',
-  'Complete': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'Deleted': 'bg-red-50 text-red-600 border-red-200',
-  'On Hold': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  'Urgent': 'bg-yellow-100 text-yellow-800 border-yellow-300'
+  'In Progress': 'bg-blue-50 dark:bg-blue-950 dark:bg-blue-950 text-blue-700 dark:text-blue-300 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+  'Complete': 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+  'Deleted': 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 dark:text-red-300 border-red-200 dark:border-red-800',
+  'On Hold': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-300',
+  'Urgent': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-300'
 };
 
 export default function App() {
@@ -968,7 +968,7 @@ export default function App() {
               )}
               {orders.length === 0 && machines.length === DEFAULT_MACHINES.length && (
                 <button onClick={initializeFirebase}
-                  className="flex items-center gap-1.5 bg-yellow-500 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
+                  className="flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-9500 hover:bg-yellow-400 px-3 py-1.5 rounded-lg transition-colors text-xs font-semibold">
                   Initialise
                 </button>
               )}
@@ -1014,9 +1014,9 @@ export default function App() {
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
                   view === tab.id
-                    ? 'bg-slate-950 dark:bg-yellow-500 text-white dark:text-slate-900 dark:text-white'
+                    ? 'bg-slate-950 dark:bg-yellow-50 dark:bg-yellow-9500 text-white dark:text-slate-900 dark:text-white'
                     : tab.alert && tab.count > 0
-                    ? 'text-yellow-700 bg-yellow-50 hover:bg-yellow-100'
+                    ? 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950 hover:bg-yellow-100 dark:bg-yellow-900'
                     : 'text-slate-600 dark:text-slate-300 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-700 hover:text-slate-900 dark:text-white dark:hover:text-white'
                 }`}
               >
@@ -1025,7 +1025,7 @@ export default function App() {
                 {tab.count !== undefined && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
                     view === tab.id ? 'bg-white/20 text-white' :
-                    tab.alert && tab.count > 0 ? 'bg-yellow-200 text-yellow-800' :
+                    tab.alert && tab.count > 0 ? 'bg-yellow-200 text-yellow-800 dark:text-yellow-200' :
                     'bg-slate-200 text-slate-600 dark:text-slate-300'
                   }`}>{tab.count}</span>
                 )}
@@ -1165,14 +1165,14 @@ export default function App() {
                     {/* ── CAPACITY WARNING ── */}
                     {capacityWarning && (
                       <div className={`mt-4 rounded-xl border-2 overflow-hidden ${
-                        capacityWarning.isOver ? 'border-red-400 bg-red-50' :
-                        capacityWarning.isNear ? 'border-yellow-400 bg-yellow-50' :
-                        'border-green-400 bg-green-50'
+                        capacityWarning.isOver ? 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950' :
+                        capacityWarning.isNear ? 'border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-950' :
+                        'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-950'
                       }`}>
                         {/* Header */}
                         <div className={`px-5 py-3 flex items-center justify-between ${
                           capacityWarning.isOver ? 'bg-red-500' :
-                          capacityWarning.isNear ? 'bg-yellow-500' :
+                          capacityWarning.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' :
                           'bg-green-500'
                         } text-white`}>
                           <div className="flex items-center gap-2 font-bold">
@@ -1201,7 +1201,7 @@ export default function App() {
                               className={`h-full flex items-center justify-center text-xs text-white font-semibold ${
                                 capacityWarning.isOver ? 'bg-red-500' :
                                 capacityWarning.isNear ? 'bg-orange-400' :
-                                'bg-blue-500'
+                                'bg-blue-50 dark:bg-blue-9500'
                               }`}
                               style={{ width: `${Math.min((capacityWarning.newQty / capacityWarning.availableCapacity) * 100, 100 - Math.min((capacityWarning.existingQty / capacityWarning.availableCapacity) * 100, 100))}%` }}
                             >
@@ -1209,7 +1209,7 @@ export default function App() {
                             </div>
                             {/* Remaining */}
                             {!capacityWarning.isOver && (
-                              <div className="h-full bg-green-200 flex-1 flex items-center justify-center text-xs text-green-700 font-semibold">
+                              <div className="h-full bg-green-200 flex-1 flex items-center justify-center text-xs text-green-700 dark:text-green-300 font-semibold">
                                 {(100 - (capacityWarning.totalAfterAdd / capacityWarning.availableCapacity) * 100) > 8 &&
                                   `${(capacityWarning.availableCapacity - capacityWarning.totalAfterAdd).toLocaleString()} remaining`}
                               </div>
@@ -1223,7 +1223,7 @@ export default function App() {
                               Existing: <b>{capacityWarning.existingQty.toLocaleString()}</b>
                             </span>
                             <span className={`flex items-center gap-1`}>
-                              <span className={`w-2.5 h-2.5 rounded-sm inline-block ${capacityWarning.isOver ? 'bg-red-500' : capacityWarning.isNear ? 'bg-orange-400' : 'bg-blue-500'}`}></span>
+                              <span className={`w-2.5 h-2.5 rounded-sm inline-block ${capacityWarning.isOver ? 'bg-red-500' : capacityWarning.isNear ? 'bg-orange-400' : 'bg-blue-50 dark:bg-blue-9500'}`}></span>
                               This order: <b>{capacityWarning.newQty.toLocaleString()}</b>
                             </span>
                             <span className="flex items-center gap-1">
@@ -1231,13 +1231,13 @@ export default function App() {
                               Available: <b>{capacityWarning.availableCapacity.toLocaleString()}</b>
                             </span>
                             <span className="ml-auto font-semibold">
-                              Total after: <b className={capacityWarning.isOver ? 'text-red-600' : ''}>{capacityWarning.totalAfterAdd.toLocaleString()}</b>
+                              Total after: <b className={capacityWarning.isOver ? 'text-red-600 dark:text-red-400' : ''}>{capacityWarning.totalAfterAdd.toLocaleString()}</b>
                             </span>
                           </div>
 
                           {/* Over capacity detail */}
                           {capacityWarning.isOver && (
-                            <div className="bg-red-100 border border-red-300 rounded-lg px-4 py-2.5 mb-3 text-sm text-red-800">
+                            <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg px-4 py-2.5 mb-3 text-sm text-red-800 dark:text-red-200">
                               <b>Over by {(capacityWarning.totalAfterAdd - Math.round(capacityWarning.availableCapacity * 1.05)).toLocaleString()} feeds</b>
                               {' '}after 5% tolerance — this order will exceed {capacityWarning.machine.name}'s available capacity on this date.
                             </div>
@@ -1255,9 +1255,9 @@ export default function App() {
                                     key={s.date}
                                     type="button"
                                     onClick={() => setNewOrder({...newOrder, planningDate: s.date})}
-                                    className="flex items-center gap-2 bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 rounded-lg px-3 py-2 text-sm transition-all"
+                                    className="flex items-center gap-2 bg-white border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 dark:bg-blue-950 rounded-lg px-3 py-2 text-sm transition-all"
                                   >
-                                    <span className="font-bold text-blue-700">{s.dayName}</span>
+                                    <span className="font-bold text-blue-700 dark:text-blue-300">{s.dayName}</span>
                                     <span className="text-slate-500 dark:text-slate-400 text-xs">{s.remaining.toLocaleString()} available</span>
                                   </button>
                                 ))}
@@ -1312,7 +1312,7 @@ export default function App() {
                                   [key]: !checked
                                 }
                               })}
-                              className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                              className="w-5 h-5 text-green-600 dark:text-green-400 rounded focus:ring-2 focus:ring-green-500"
                             />
                             <span className={`text-sm ${checked ? 'font-semibold text-green-900' : 'text-slate-700 dark:text-slate-200'}`}>
                               {v}
@@ -1381,41 +1381,41 @@ export default function App() {
 
             {/* Alerts Section */}
             {(analytics.overCapacityDays > 0 || analytics.bottlenecks.length > 0 || analytics.kickOffRequired?.length > 0) && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
+              <div className="bg-red-50 dark:bg-red-950 border-2 border-red-200 dark:border-red-800 rounded-xl p-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <AlertTriangle className="text-red-600 mt-1" size={24} />
+                  <AlertTriangle className="text-red-600 dark:text-red-400 mt-1" size={24} />
                   <div>
-                    <h3 className="text-lg font-bold text-red-900">Production Alerts</h3>
-                    <p className="text-sm text-red-700">Issues requiring immediate attention</p>
+                    <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Production Alerts</h3>
+                    <p className="text-sm text-red-700 dark:text-red-300">Issues requiring immediate attention</p>
                   </div>
                 </div>
                 <div className="space-y-3">
                   {analytics.overCapacityDays > 0 && (
-                    <div className="bg-white rounded-lg p-4 border-l-4 border-red-500">
-                      <div className="font-semibold text-red-900">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border-l-4 border-red-500 dark:border-red-400">
+                      <div className="font-semibold text-red-900 dark:text-red-100">
                         ⚠️ {analytics.overCapacityDays} day(s) over capacity in next 14 days
                       </div>
-                      <div className="text-sm text-red-700 mt-1">
+                      <div className="text-sm text-red-700 dark:text-red-300 mt-1">
                         Review capacity planning tab to redistribute workload
                       </div>
                     </div>
                   )}
                   {analytics.bottlenecks.map(([validation, stats]) => (
-                    <div key={validation} className="bg-white rounded-lg p-4 border-l-4 border-orange-500">
-                      <div className="font-semibold text-yellow-900">
+                    <div key={validation} className="bg-white dark:bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 dark:border-orange-400 dark:border-orange-600">
+                      <div className="font-semibold text-yellow-900 dark:text-yellow-100">
                         📋 {validation}: Only {stats.percentage}% complete ({stats.completed}/{stats.total} orders)
                       </div>
-                      <div className="text-sm text-yellow-700 mt-1">
+                      <div className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                         This validation is blocking progress on multiple orders
                       </div>
                     </div>
                   ))}
                   {analytics.kickOffRequired && analytics.kickOffRequired.length > 0 && (
-                    <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
-                      <div className="font-semibold text-blue-900">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border-l-4 border-blue-500 dark:border-blue-400">
+                      <div className="font-semibold text-blue-900 dark:text-blue-100">
                         📅 {analytics.kickOffRequired.length} order{analytics.kickOffRequired.length !== 1 ? 's' : ''} requiring kick-off meeting
                       </div>
-                      <div className="text-sm text-blue-700 mt-1">
+                      <div className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                         {analytics.kickOffRequired.slice(0, 3).map(o => o.customer).join(', ')}
                         {analytics.kickOffRequired.length > 3 && ` and ${analytics.kickOffRequired.length - 3} more`}
                       </div>
@@ -1436,8 +1436,8 @@ export default function App() {
                 <div className="space-y-3">
                   {analytics.forecast.slice(0, 7).map((f, idx) => (
                     <div key={idx} className={`p-4 rounded-lg border-2 ${
-                      f.isOver ? 'border-red-500 bg-red-50' : 
-                      f.isNear ? 'border-orange-500 bg-yellow-50' : 
+                      f.isOver ? 'border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-950' : 
+                      f.isNear ? 'border-orange-500 dark:border-orange-600 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-950' : 
                       'border-slate-200 bg-slate-50 dark:bg-slate-800'
                     }`}>
                       <div className="flex justify-between items-center mb-2">
@@ -1447,7 +1447,7 @@ export default function App() {
                           </span>
                           <span className="ml-3 text-slate-600 dark:text-slate-300">{f.machine}</span>
                         </div>
-                        <div className={`font-bold text-right ${f.isOver ? 'text-red-600' : f.isNear ? 'text-yellow-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                        <div className={`font-bold text-right ${f.isOver ? 'text-red-600 dark:text-red-400' : f.isNear ? 'text-yellow-600 dark:text-yellow-400' : 'text-slate-700 dark:text-slate-200'}`}>
                           <div>{f.nonStockUsed.toLocaleString()} / {f.availableCapacity.toLocaleString()} available</div>
                           <div className="text-xs font-normal text-slate-500 dark:text-slate-400">
                             ({f.percentageOfAvailable}% of available • {f.percentageOfTotal}% of total)
@@ -1466,7 +1466,7 @@ export default function App() {
                         {/* Non-stock orders (on top of stock) */}
                         <div 
                           className={`absolute h-4 rounded-full transition-all ${
-                            f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-500' : 'bg-blue-500'
+                            f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-9500'
                           }`}
                           style={{ 
                             left: `${(f.stockReserved / f.totalCapacity) * 100}%`,
@@ -1484,7 +1484,7 @@ export default function App() {
                             <span>Stock: {f.stockReserved.toLocaleString()}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className={`w-3 h-3 rounded ${f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}></div>
+                            <div className={`w-3 h-3 rounded ${f.isOver ? 'bg-red-600' : f.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-9500'}`}></div>
                             <span>Non-Stock: {f.nonStockUsed.toLocaleString()}</span>
                           </div>
                         </div>
@@ -1492,11 +1492,11 @@ export default function App() {
                       </div>
 
                       {f.isOver && (
-                        <div className="bg-red-100 border border-red-300 rounded-lg p-3">
-                          <div className="font-semibold text-red-900">
+                        <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-3">
+                          <div className="font-semibold text-red-900 dark:text-red-100">
                             ⚠️ OVER AVAILABLE CAPACITY (exceeds 105% tolerance)
                           </div>
-                          <div className="text-sm text-red-700 mt-1">
+                          <div className="text-sm text-red-700 dark:text-red-300 mt-1">
                             Non-stock orders exceed available capacity after stock reservation
                           </div>
                         </div>
@@ -1512,8 +1512,8 @@ export default function App() {
               <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">Machine Utilisation (All Orders)</h3>
               <div className="grid grid-cols-2 gap-4">
                 {analytics.machineUtil.map(m => {
-                  const utilisationColor = m.utilisationPercent >= 100 ? 'text-red-600' : 
-                                          m.utilisationPercent >= 90 ? 'text-yellow-600' : 
+                  const utilisationColor = m.utilisationPercent >= 100 ? 'text-red-600 dark:text-red-400' : 
+                                          m.utilisationPercent >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 
                                           'text-slate-900 dark:text-white';
                   return (
                     <div key={m.machine} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200">
@@ -1536,8 +1536,8 @@ export default function App() {
                         <div 
                           className={`h-2 rounded-full transition-all ${
                             m.utilisationPercent >= 100 ? 'bg-red-600' : 
-                            m.utilisationPercent >= 90 ? 'bg-yellow-500' : 
-                            'bg-blue-500'
+                            m.utilisationPercent >= 90 ? 'bg-yellow-50 dark:bg-yellow-9500' : 
+                            'bg-blue-50 dark:bg-blue-9500'
                           }`}
                           style={{ width: `${Math.min(m.utilisationPercent, 100)}%` }}
                         />
@@ -1568,21 +1568,21 @@ export default function App() {
                 const isNear = utilPct >= 90 && utilPct <= 105;
                 return (
                   <div key={machine.id} className={`rounded-xl p-4 border-2 ${
-                    isOver ? 'bg-red-50 border-red-400' :
-                    isNear ? 'bg-yellow-50 border-yellow-400' :
-                    'bg-white border-slate-200'
+                    isOver ? 'bg-red-50 dark:bg-red-950 border-red-400 dark:border-red-600' :
+                    isNear ? 'bg-yellow-50 dark:bg-yellow-950 border-yellow-400' :
+                    'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                   }`}>
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <div className="text-lg font-bold text-slate-900 dark:text-white">{machine.name}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">{machine.fullName}</div>
                       </div>
-                      <div className={`text-2xl font-black ${isOver ? 'text-red-600' : isNear ? 'text-orange-500' : 'text-blue-600'}`}>
+                      <div className={`text-2xl font-black ${isOver ? 'text-red-600 dark:text-red-400' : isNear ? 'text-orange-500' : 'text-blue-600 dark:text-blue-400'}`}>
                         {utilPct}%
                       </div>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-3 mb-3">
-                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}
+                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-9500'}`}
                         style={{ width: `${Math.min(utilPct, 100)}%` }} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1592,7 +1592,7 @@ export default function App() {
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Available</div>
-                        <div className="font-bold text-blue-700">{machine.availableCapacity.toLocaleString()}</div>
+                        <div className="font-bold text-blue-700 dark:text-blue-300">{machine.availableCapacity.toLocaleString()}</div>
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Stock Alloc.</div>
@@ -1603,9 +1603,9 @@ export default function App() {
                         <div className="font-bold text-slate-800 dark:text-slate-100">{scheduledDays}</div>
                       </div>
                     </div>
-                    {isOver && <div className="mt-2 text-xs font-bold text-red-600 bg-red-100 rounded-lg px-2 py-1 text-center">⚠️ OVER CAPACITY</div>}
-                    {isNear && !isOver && <div className="mt-2 text-xs font-bold text-yellow-600 bg-yellow-100 rounded-lg px-2 py-1 text-center">⚡ NEAR CAPACITY</div>}
-                    {!isOver && !isNear && <div className="mt-2 text-xs font-bold text-green-600 bg-green-100 rounded-lg px-2 py-1 text-center">✓ OK</div>}
+                    {isOver && <div className="mt-2 text-xs font-bold text-red-600 dark:text-red-400 bg-red-100 rounded-lg px-2 py-1 text-center">⚠️ OVER CAPACITY</div>}
+                    {isNear && !isOver && <div className="mt-2 text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900 rounded-lg px-2 py-1 text-center">⚡ NEAR CAPACITY</div>}
+                    {!isOver && !isNear && <div className="mt-2 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 rounded-lg px-2 py-1 text-center">✓ OK</div>}
                   </div>
                 );
               })}
@@ -1643,7 +1643,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 border-l border-slate-200 pl-4">
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-400 rounded-sm"></div>Stock</div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div>Non-Stock</div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-50 dark:bg-blue-9500 rounded-sm"></div>Non-Stock</div>
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-green-400 rounded-sm"></div>Available</div>
                 </div>
               </div>
@@ -1722,7 +1722,7 @@ export default function App() {
                       const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
 
                       return (
-                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-yellow-50' : 'bg-white'}`}>
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-950' : 'bg-white'}`}>
                           
                           {/* Row top: date + capacity bar + numbers */}
                           <div className="flex gap-4 items-center mb-3">
@@ -1730,11 +1730,11 @@ export default function App() {
                             {/* Date badge */}
                             <div className={`flex-shrink-0 w-16 text-center rounded-lg py-2 border-2 ${
                               day.isOver ? 'bg-red-100 border-red-300' :
-                              day.isNear ? 'bg-yellow-100 border-yellow-300' :
+                              day.isNear ? 'bg-yellow-100 dark:bg-yellow-900 border-yellow-300' :
                               'bg-slate-50 dark:bg-slate-800 border-slate-200'
                             }`}>
                               <div className={`text-xs font-bold uppercase tracking-wide ${day.isOver ? 'text-red-500' : day.isNear ? 'text-orange-500' : 'text-slate-400'}`}>{dayName}</div>
-                              <div className={`text-2xl font-black leading-none ${day.isOver ? 'text-red-700' : day.isNear ? 'text-yellow-700' : 'text-slate-800 dark:text-slate-100'}`}>{dayNum}</div>
+                              <div className={`text-2xl font-black leading-none ${day.isOver ? 'text-red-700 dark:text-red-300' : day.isNear ? 'text-yellow-700 dark:text-yellow-300' : 'text-slate-800 dark:text-slate-100'}`}>{dayNum}</div>
                               <div className="text-xs text-slate-400 mt-0.5">{monthName}</div>
                             </div>
 
@@ -1742,7 +1742,7 @@ export default function App() {
                             <div className="flex-1">
                               <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                                 <span>{day.orders.length} order{day.orders.length !== 1 ? 's' : ''}</span>
-                                <span className={`font-bold ${day.isOver ? 'text-red-600' : day.isNear ? 'text-yellow-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                                <span className={`font-bold ${day.isOver ? 'text-red-600 dark:text-red-400' : day.isNear ? 'text-yellow-600 dark:text-yellow-400' : 'text-slate-600 dark:text-slate-300'}`}>
                                   {day.percentageOfAvailable}% of available
                                 </span>
                               </div>
@@ -1751,18 +1751,18 @@ export default function App() {
                                 <div className="h-full bg-slate-400 flex items-center justify-center text-xs text-white font-semibold" style={{ width: `${stockPct}%` }}>
                                   {stockPct > 8 && 'Stock'}
                                 </div>
-                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`} style={{ width: `${nonStockPct}%` }}>
+                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-9500'}`} style={{ width: `${nonStockPct}%` }}>
                                   {nonStockPct > 8 && day.nonStockUsed.toLocaleString()}
                                 </div>
-                                <div className="h-full bg-green-200 flex items-center justify-center text-xs text-green-700 font-semibold" style={{ width: `${remainPct}%` }}>
+                                <div className="h-full bg-green-200 flex items-center justify-center text-xs text-green-700 dark:text-green-300 font-semibold" style={{ width: `${remainPct}%` }}>
                                   {remainPct > 8 && day.remaining.toLocaleString()}
                                 </div>
                               </div>
                               {/* Numbers below bar */}
                               <div className="flex gap-3 mt-1.5 text-xs">
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 bg-slate-400 rounded-sm inline-block"></span>Stock: <b>{day.stockReserved.toLocaleString()}</b></span>
-                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-sm inline-block"></span>Remaining: <b className="text-green-700">{day.remaining.toLocaleString()}</b></span>
+                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-9500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-sm inline-block"></span>Remaining: <b className="text-green-700 dark:text-green-300">{day.remaining.toLocaleString()}</b></span>
                                 <span className="ml-auto text-slate-400">Total: <b className="text-slate-700 dark:text-slate-200">{day.totalCapacity.toLocaleString()}</b></span>
                               </div>
                             </div>
@@ -1770,8 +1770,8 @@ export default function App() {
                             {/* Status badge */}
                             <div className={`flex-shrink-0 w-20 text-center rounded-lg py-3 ${
                               day.isOver ? 'bg-red-500 text-white' :
-                              day.isNear ? 'bg-yellow-500 text-white' :
-                              'bg-green-100 text-green-700'
+                              day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500 text-white' :
+                              'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
                             }`}>
                               <div className="text-xl font-black">{day.percentageOfAvailable}%</div>
                               <div className="text-xs font-semibold leading-tight">{day.isOver ? 'OVER' : day.isNear ? 'NEAR' : 'OK'}</div>
@@ -1780,9 +1780,9 @@ export default function App() {
 
                           {/* Over capacity warning */}
                           {day.isOver && (
-                            <div className="flex items-center gap-3 bg-red-100 border border-red-300 rounded-lg px-4 py-2 mb-3 text-sm">
-                              <span className="text-red-600 font-bold text-base">⚠️</span>
-                              <span className="text-red-800">
+                            <div className="flex items-center gap-3 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg px-4 py-2 mb-3 text-sm">
+                              <span className="text-red-600 dark:text-red-400 font-bold text-base">⚠️</span>
+                              <span className="text-red-800 dark:text-red-200">
                                 <b>Over capacity by {(day.nonStockUsed - Math.round(day.availableCapacity * 1.05)).toLocaleString()} feeds</b>
                                 {' '}— Consider rescheduling or reallocating orders
                               </span>
@@ -1826,12 +1826,12 @@ export default function App() {
           <div className="space-y-4">
             {/* Material Needed Info Banner */}
             {view === 'materialneeded' && (
-              <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-5">
+              <div className="bg-yellow-50 dark:bg-yellow-950 border-2 border-yellow-300 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                   <div className="text-3xl">📦</div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-amber-900 mb-1">Material Purchasing Queue</h3>
-                    <p className="text-yellow-800 mb-3">
+                    <p className="text-yellow-800 dark:text-yellow-200 mb-3">
                       These orders need materials to be purchased. Check the "Material Purchasing" box when materials have been ordered.
                     </p>
                     <div className="bg-white rounded-lg p-3 border border-yellow-200">
@@ -1909,15 +1909,15 @@ export default function App() {
               {(searchFilter || validationFilter !== 'all') && view === 'active' && (
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {searchFilter && (
-                    <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="flex items-center gap-2 bg-blue-100 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-semibold">
                       Search: "{searchFilter}"
-                      <button onClick={() => setSearchFilter('')} className="hover:text-blue-900">
+                      <button onClick={() => setSearchFilter('')} className="hover:text-blue-900 dark:text-blue-100">
                         <X size={14} />
                       </button>
                     </div>
                   )}
                   {validationFilter === 'materialpurchasing' && (
-                    <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-full text-sm font-semibold">
                       📦 Material Purchasing Needed
                       <button onClick={() => setValidationFilter('all')} className="hover:text-amber-900">
                         <X size={14} />
@@ -1925,9 +1925,9 @@ export default function App() {
                     </div>
                   )}
                   {validationFilter === 'pending' && (
-                    <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="flex items-center gap-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-full text-sm font-semibold">
                       ⏳ Pending Validations
-                      <button onClick={() => setValidationFilter('all')} className="hover:text-yellow-900">
+                      <button onClick={() => setValidationFilter('all')} className="hover:text-yellow-900 dark:text-yellow-100">
                         <X size={14} />
                       </button>
                     </div>
@@ -2107,7 +2107,7 @@ export default function App() {
                                   checked 
                                     ? 'border-green-500 bg-green-50 shadow-sm' 
                                     : highlightMaterial
-                                    ? 'border-yellow-400 bg-yellow-50 shadow-sm ring-2 ring-amber-300'
+                                    ? 'border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-950 dark:bg-yellow-950 shadow-sm ring-2 ring-amber-300'
                                     : 'border-slate-200 bg-white hover:border-slate-300'
                                 }`}
                               >
@@ -2115,7 +2115,7 @@ export default function App() {
                                   type="checkbox"
                                   checked={checked}
                                   onChange={() => toggleVal(order.id, key)}
-                                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                                  className="w-5 h-5 text-green-600 dark:text-green-400 rounded focus:ring-2 focus:ring-green-500"
                                 />
                                 <span className={`text-sm ${
                                   checked 
@@ -2159,14 +2159,14 @@ export default function App() {
         <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
           <div className={`rounded-xl shadow-sm p-4 min-w-[300px] max-w-md border-2 ${
             toast.type === 'success' ? 'bg-green-50 border-green-500 text-green-900' :
-            toast.type === 'error' ? 'bg-red-50 border-red-500 text-red-900' :
-            'bg-blue-50 border-blue-500 text-blue-900'
+            toast.type === 'error' ? 'bg-red-50 border-red-500 text-red-900 dark:text-red-100' :
+            'bg-blue-50 dark:bg-blue-950 border-blue-500 text-blue-900 dark:text-blue-100'
           }`}>
             <div className="flex items-center gap-3">
               <div className={`text-2xl ${
-                toast.type === 'success' ? 'text-green-600' :
-                toast.type === 'error' ? 'text-red-600' :
-                'text-blue-600'
+                toast.type === 'success' ? 'text-green-600 dark:text-green-400' :
+                toast.type === 'error' ? 'text-red-600 dark:text-red-400' :
+                'text-blue-600 dark:text-blue-400'
               }`}>
                 {toast.type === 'success' ? '✓' : toast.type === 'error' ? '⚠' : 'ℹ'}
               </div>
@@ -2189,19 +2189,19 @@ export default function App() {
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 max-w-lg w-full p-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-red-100 p-3 rounded-full">
-                <AlertTriangle className="text-red-600" size={32} />
+                <AlertTriangle className="text-red-600 dark:text-red-400" size={32} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-red-900">Delete All Orders?</h2>
-                <p className="text-red-700">This action cannot be undone!</p>
+                <h2 className="text-2xl font-bold text-red-900 dark:text-red-100">Delete All Orders?</h2>
+                <p className="text-red-700 dark:text-red-300">This action cannot be undone!</p>
               </div>
             </div>
             
             <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-900 font-semibold mb-2">
+              <p className="text-red-900 dark:text-red-100 font-semibold mb-2">
                 You are about to permanently delete:
               </p>
-              <ul className="text-red-800 space-y-1 ml-4">
+              <ul className="text-red-800 dark:text-red-200 space-y-1 ml-4">
                 <li>• <span className="font-bold">{orders.length}</span> total orders</li>
                 <li>• <span className="font-bold">{active.length}</span> active orders</li>
                 <li>• <span className="font-bold">{completed.length}</span> completed orders</li>
@@ -2210,7 +2210,7 @@ export default function App() {
 
             <div className="mb-6">
               <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
-                Type <span className="bg-red-100 text-red-900 px-2 py-1 rounded font-mono">DELETE ALL</span> to confirm:
+                Type <span className="bg-red-100 text-red-900 dark:text-red-100 px-2 py-1 rounded font-mono">DELETE ALL</span> to confirm:
               </label>
               <input
                 type="text"
