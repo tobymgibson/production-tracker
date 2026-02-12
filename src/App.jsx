@@ -1586,19 +1586,19 @@ export default function App() {
                         style={{ width: `${Math.min(utilPct, 100)}%` }} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                      <div className="bg-white dark:bg-slate-700 rounded-lg p-2 border border-slate-100 dark:border-slate-600">
                         <div className="text-slate-400 mb-0.5">Avg/Day</div>
                         <div className="font-bold text-slate-800 dark:text-slate-100">{Math.round(avgPerDay).toLocaleString()}</div>
                       </div>
-                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                      <div className="bg-white dark:bg-slate-700 rounded-lg p-2 border border-slate-100 dark:border-slate-600">
                         <div className="text-slate-400 mb-0.5">Available</div>
                         <div className="font-bold text-blue-700 dark:text-blue-300">{machine.availableCapacity.toLocaleString()}</div>
                       </div>
-                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                      <div className="bg-white dark:bg-slate-700 rounded-lg p-2 border border-slate-100 dark:border-slate-600">
                         <div className="text-slate-400 mb-0.5">Stock Alloc.</div>
                         <div className="font-bold text-slate-600 dark:text-slate-300">{stockReserved.toLocaleString()}</div>
                       </div>
-                      <div className="bg-white rounded-lg p-2 border border-slate-100">
+                      <div className="bg-white dark:bg-slate-700 rounded-lg p-2 border border-slate-100 dark:border-slate-600">
                         <div className="text-slate-400 mb-0.5">Days Booked</div>
                         <div className="font-bold text-slate-800 dark:text-slate-100">{scheduledDays}</div>
                       </div>
@@ -1792,7 +1792,7 @@ export default function App() {
                           {/* Orders list - compact */}
                           <div className="grid grid-cols-1 gap-1.5 pl-20">
                             {day.orders.map(o => (
-                              <div key={o.id} className="flex items-center justify-between bg-white rounded-lg px-4 py-2.5 border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all">
+                              <div key={o.id} className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-lg px-4 py-2.5 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-sm transition-all">
                                 <div className="flex items-center gap-3 min-w-0">
                                   <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${day.isOver ? 'bg-red-400' : day.isNear ? 'bg-orange-400' : 'bg-blue-400'}`}></div>
                                   <div className="min-w-0">
