@@ -453,7 +453,7 @@ export default function App() {
 
     // Find bottlenecks (least completed validations)
     const bottlenecks = Object.entries(validationStats)
-      .filter(([validation, _]) => validation !== 'Kick Off Meeting') // Exclude - not required for all orders
+      .filter(([validation, _]) => validation !== 'Kick Off Meeting Required') // Exclude - not required for all orders
       .sort((a, b) => a[1].percentage - b[1].percentage)
       .slice(0, 3)
       .filter(([_, stats]) => stats.percentage < 80 && stats.total > 0);
