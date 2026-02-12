@@ -1582,7 +1582,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 mb-3">
-                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-900/400'}`}
+                      <div className={`h-3 rounded-full transition-all ${isOver ? 'bg-red-500' : isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}
                         style={{ width: `${Math.min(utilPct, 100)}%` }} />
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1643,7 +1643,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 border-l border-slate-200 pl-4">
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-slate-400 rounded-sm"></div>Stock</div>
-                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-50 dark:bg-blue-900/400 rounded-sm"></div>Non-Stock</div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div>Non-Stock</div>
                   <div className="flex items-center gap-1.5"><div className="w-3 h-3 bg-green-400 rounded-sm"></div>Available</div>
                 </div>
               </div>
@@ -1722,7 +1722,7 @@ export default function App() {
                       const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
 
                       return (
-                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-950' : 'bg-white'}`}>
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50 dark:bg-red-900/30' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-slate-800'}`}>
                           
                           {/* Row top: date + capacity bar + numbers */}
                           <div className="flex gap-4 items-center mb-3">
@@ -1730,7 +1730,7 @@ export default function App() {
                             {/* Date badge */}
                             <div className={`flex-shrink-0 w-16 text-center rounded-lg py-2 border-2 ${
                               day.isOver ? 'bg-red-100 border-red-300' :
-                              day.isNear ? 'bg-yellow-100 dark:bg-yellow-900 border-yellow-300' :
+                              day.isNear ? 'bg-yellow-100 dark:bg-yellow-700 border-yellow-300 dark:border-yellow-600' :
                               'bg-slate-50 dark:bg-slate-800 border-slate-200'
                             }`}>
                               <div className={`text-xs font-bold uppercase tracking-wide ${day.isOver ? 'text-red-500' : day.isNear ? 'text-orange-500' : 'text-slate-400'}`}>{dayName}</div>
@@ -1751,7 +1751,7 @@ export default function App() {
                                 <div className="h-full bg-slate-400 flex items-center justify-center text-xs text-white font-semibold" style={{ width: `${stockPct}%` }}>
                                   {stockPct > 8 && 'Stock'}
                                 </div>
-                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-900/400'}`} style={{ width: `${nonStockPct}%` }}>
+                                <div className={`h-full flex items-center justify-center text-xs text-white font-semibold ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`} style={{ width: `${nonStockPct}%` }}>
                                   {nonStockPct > 8 && day.nonStockUsed.toLocaleString()}
                                 </div>
                                 <div className="h-full bg-green-200 flex items-center justify-center text-xs text-green-700 dark:text-green-300 font-semibold" style={{ width: `${remainPct}%` }}>
@@ -1761,7 +1761,7 @@ export default function App() {
                               {/* Numbers below bar */}
                               <div className="flex gap-3 mt-1.5 text-xs">
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 bg-slate-400 rounded-sm inline-block"></span>Stock: <b>{day.stockReserved.toLocaleString()}</b></span>
-                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500' : 'bg-blue-50 dark:bg-blue-900/400'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
+                                <span className={`flex items-center gap-1`}><span className={`w-2 h-2 rounded-sm inline-block ${day.isOver ? 'bg-red-500' : day.isNear ? 'bg-yellow-500' : 'bg-blue-500'}`}></span>Orders: <b>{day.nonStockUsed.toLocaleString()}</b></span>
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-400 rounded-sm inline-block"></span>Remaining: <b className="text-green-700 dark:text-green-300">{day.remaining.toLocaleString()}</b></span>
                                 <span className="ml-auto text-slate-400">Total: <b className="text-slate-700 dark:text-slate-100">{day.totalCapacity.toLocaleString()}</b></span>
                               </div>
@@ -1770,7 +1770,7 @@ export default function App() {
                             {/* Status badge */}
                             <div className={`flex-shrink-0 w-20 text-center rounded-lg py-3 ${
                               day.isOver ? 'bg-red-500 text-white' :
-                              day.isNear ? 'bg-yellow-50 dark:bg-yellow-9500 text-white' :
+                              day.isNear ? 'bg-yellow-500 text-slate-900' :
                               'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
                             }`}>
                               <div className="text-xl font-black">{day.percentageOfAvailable}%</div>
