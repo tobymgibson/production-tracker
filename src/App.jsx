@@ -1298,8 +1298,8 @@ export default function App() {
                             key={v}
                             className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${
                               checked 
-                                ? 'border-green-500 bg-green-50 shadow-sm' 
-                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/40 shadow-sm' 
+                                : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
                             }`}
                           >
                             <input
@@ -1314,7 +1314,7 @@ export default function App() {
                               })}
                               className="w-5 h-5 text-green-600 dark:text-green-400 rounded focus:ring-2 focus:ring-green-500"
                             />
-                            <span className={`text-sm ${checked ? 'font-semibold text-green-900' : 'text-slate-700 dark:text-slate-100'}`}>
+                            <span className={`text-sm text-slate-900 dark:text-slate-100 ${checked ? 'font-semibold text-green-900' : 'text-slate-700 dark:text-slate-100'}`}>
                               {v}
                             </span>
                           </label>
@@ -1974,7 +1974,7 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Customer name"
-                            className="font-bold text-slate-900 dark:text-white w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1"
+                            className="font-bold text-slate-900 dark:text-white w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1 bg-transparent dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                           />
                         </div>
                         <div>
@@ -1989,7 +1989,7 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Works order #"
-                            className="text-slate-700 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1"
+                            className="text-slate-900 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1 bg-transparent dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                           />
                         </div>
                         <div>
@@ -2004,7 +2004,7 @@ export default function App() {
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
                             placeholder="Order description"
-                            className="text-slate-700 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1"
+                            className="text-slate-900 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1 bg-transparent dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                           />
                         </div>
                         <div>
@@ -2018,7 +2018,7 @@ export default function App() {
                             }}
                             onBlur={() => saveEditingOrder(order.id)}
                             onClick={e => e.stopPropagation()}
-                            className="text-slate-700 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1"
+                            className="text-slate-900 dark:text-slate-100 w-full border-b-2 border-transparent hover:border-slate-200 dark:hover:border-slate-600 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none px-1 py-1 bg-transparent dark:bg-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                           />
                         </div>
                         <div>
@@ -2050,7 +2050,7 @@ export default function App() {
 
                   {/* Expanded Details */}
                   {expandedOrder === order.id && (
-                    <div className="border-t-2 border-slate-200 bg-slate-50 dark:bg-slate-800 p-5 space-y-5">
+                    <div className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 p-5 space-y-5">
                       {/* Additional Fields */}
                       <div className="grid grid-cols-3 gap-4">
                         <div>
@@ -2061,7 +2061,7 @@ export default function App() {
                             onChange={e => updateEditingOrder(order.id, 'spec', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="Specification"
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
+                            className="w-full border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                           />
                         </div>
                         <div>
@@ -2072,7 +2072,7 @@ export default function App() {
                             onChange={e => updateEditingOrder(order.id, 'quantity', e.target.value)}
                             onBlur={() => saveEditingOrder(order.id)}
                             placeholder="0"
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
+                            className="w-full border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                           />
                         </div>
                         <div>
@@ -2080,7 +2080,7 @@ export default function App() {
                           <select
                             value={order.machineId || ''}
                             onChange={e => updateOrder(order.id, { machineId: parseInt(e.target.value) || null })}
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-yellow-400 focus:outline-none"
+                            className="w-full border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 focus:border-yellow-400 dark:focus:border-yellow-500 focus:outline-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                           >
                             <option value="">Not Assigned</option>
                             {MACHINES.map(m => (
@@ -2105,10 +2105,10 @@ export default function App() {
                                 key={v}
                                 className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all ${
                                   checked 
-                                    ? 'border-green-500 bg-green-50 shadow-sm' 
+                                    ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/40 shadow-sm' 
                                     : highlightMaterial
                                     ? 'border-yellow-400 dark:border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 dark:bg-yellow-950 shadow-sm ring-2 ring-amber-300'
-                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                    : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
                                 }`}
                               >
                                 <input
@@ -2117,7 +2117,7 @@ export default function App() {
                                   onChange={() => toggleVal(order.id, key)}
                                   className="w-5 h-5 text-green-600 dark:text-green-400 rounded focus:ring-2 focus:ring-green-500"
                                 />
-                                <span className={`text-sm ${
+                                <span className={`text-sm text-slate-900 dark:text-slate-100 ${
                                   checked 
                                     ? 'font-semibold text-green-900' 
                                     : highlightMaterial
