@@ -1016,7 +1016,7 @@ export default function App() {
                   view === tab.id
                     ? 'bg-white dark:bg-white text-slate-900 shadow-md'
                     : tab.alert && tab.count > 0
-                    ? 'text-yellow-400 dark:text-yellow-400 bg-yellow-900/20 dark:bg-yellow-900/30 hover:bg-yellow-800/30 dark:hover:bg-yellow-800/40 font-bold'
+                    ? 'text-yellow-800 dark:text-yellow-400 bg-yellow-900/20 dark:bg-yellow-900/30 hover:bg-yellow-800/30 dark:hover:bg-yellow-800/40 font-bold'
                     : 'text-slate-400 dark:text-slate-400 hover:bg-slate-700/50 dark:hover:bg-slate-700 hover:text-white dark:hover:text-white'
                 }`}
               >
@@ -1568,7 +1568,7 @@ export default function App() {
                 const isNear = utilPct >= 90 && utilPct <= 105;
                 return (
                   <div key={machine.id} className={`rounded-xl p-4 border-2 ${
-                    isOver ? 'bg-red-50 dark:bg-red-900/40 border-red-400 dark:border-red-600' :
+                    isOver ? 'bg-red-50 dark:bg-red-950/70 border-red-400 dark:border-red-500' :
                     isNear ? 'bg-yellow-50 dark:bg-yellow-950 border-yellow-400' :
                     'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                   }`}>
@@ -1722,7 +1722,7 @@ export default function App() {
                       const remainPct = Math.max(0, 100 - stockPct - nonStockPct);
 
                       return (
-                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50 dark:bg-red-900/30' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-slate-800'}`}>
+                        <div key={day.date} className={`p-5 ${day.isOver ? 'bg-red-50 dark:bg-red-950/60' : day.isNear ? 'bg-yellow-50 dark:bg-yellow-900/30' : 'bg-white dark:bg-slate-800'}`}>
                           
                           {/* Row top: date + capacity bar + numbers */}
                           <div className="flex gap-4 items-center mb-3">
