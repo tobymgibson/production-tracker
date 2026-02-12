@@ -437,7 +437,7 @@ export default function App() {
 
   // PREDICTIVE ANALYTICS
   const analytics = useMemo(() => {
-    const active = orders.filter(o => o.status !== 'Complete' && o.status !== 'Deleted');
+    const active = orders.filter(o => o.status !== 'Deleted');
     
     // Calculate validation completion rate
     const validationStats = {};
@@ -453,10 +453,10 @@ export default function App() {
 
     // Find bottlenecks (least completed validations)
     const bottlenecks = Object.entries(validationStats)
+      .filter(([validation, _]) => validation !== 'Kick Off Meeting') // Exclude - not required for all orders
       .sort((a, b) => a[1].percentage - b[1].percentage)
       .slice(0, 3)
       .filter(([_, stats]) => stats.percentage < 80 && stats.total > 0);
-
     // Capacity forecasting for next 14 days
     const today = new Date();
     const forecast = [];
@@ -513,20 +513,32 @@ export default function App() {
 
     // Machine utilization
     const machineUtil = MACHINES.map(machine => {
-      const machineOrders = active.filter(o => o.machineId === machine.id);
+      const machineOrders = active.filter(o => o.machineId === machine.id && o.planningDate);
       const totalQty = machineOrders.reduce((sum, o) => {
         const qty = parseInt(String(o.quantity || '0').replace(/,/g, '')) || 0;
         return sum + qty;
       }, 0);
+      
+      // Count unique planning dates to get actual days utilization
+      const uniqueDates = new Set(machineOrders.map(o => o.planningDate)).size;
+      const avgPerDay = uniqueDates > 0 ? totalQty / uniqueDates : 0;
       
       return {
         machine: machine.name,
         fullName: machine.fullName,
         orders: machineOrders.length,
         totalQuantity: totalQty,
+        scheduledDays: uniqueDates,
+        avgPerDay: Math.round(avgPerDay),
         availableCapacity: machine.availableCapacity,
-        utilizationPercent: Math.round((totalQty / machine.availableCapacity) * 100)
+        utilizationPercent: Math.round((avgPerDay / machine.availableCapacity) * 100)
       };
+    });
+
+    // Find orders requiring kick-off meetings
+    const kickOffRequired = active.filter(o => {
+      const key = 'kickoffmeetingrequired';
+      return o.validations?.[key] === true; // Checkbox is ticked = meeting needed
     });
 
     return {
@@ -537,6 +549,7 @@ export default function App() {
       nearCapacityDays,
       avgLeadTime: Math.round(avgLeadTime),
       machineUtil,
+      kickOffRequired,
       totalActive: active.length,
       totalCompleted: orders.filter(o => o.status === 'Complete').length
     };
@@ -1362,7 +1375,7 @@ export default function App() {
             </div>
 
             {/* Alerts Section */}
-            {(analytics.overCapacityDays > 0 || analytics.bottlenecks.length > 0) && (
+            {(analytics.overCapacityDays > 0 || analytics.bottlenecks.length > 0 || analytics.kickOffRequired?.length > 0) && (
               <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
                 <div className="flex items-start gap-3 mb-4">
                   <AlertTriangle className="text-red-600 mt-1" size={24} />
@@ -1392,6 +1405,17 @@ export default function App() {
                       </div>
                     </div>
                   ))}
+                  {analytics.kickOffRequired && analytics.kickOffRequired.length > 0 && (
+                    <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
+                      <div className="font-semibold text-blue-900">
+                        📅 {analytics.kickOffRequired.length} order{analytics.kickOffRequired.length !== 1 ? 's' : ''} requiring kick-off meeting
+                      </div>
+                      <div className="text-sm text-blue-700 mt-1">
+                        {analytics.kickOffRequired.slice(0, 3).map(o => o.customer).join(', ')}
+                        {analytics.kickOffRequired.length > 3 && ` and ${analytics.kickOffRequired.length - 3} more`}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1480,7 +1504,7 @@ export default function App() {
 
             {/* Machine Utilization */}
             <div className="bg-white rounded-lg border border-slate-200 p-5">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilization (Active Orders)</h3>
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilization (All Orders)</h3>
               <div className="grid grid-cols-2 gap-4">
                 {analytics.machineUtil.map(m => {
                   const utilizationColor = m.utilizationPercent >= 100 ? 'text-red-600' : 
@@ -1498,9 +1522,9 @@ export default function App() {
                         </div>
                       </div>
                       <div className="text-sm text-slate-600 mt-2 space-y-1">
-                        <div>{m.orders} active order{m.orders !== 1 ? 's' : ''}</div>
+                        <div>{m.orders} order{m.orders !== 1 ? 's' : ''} across {m.scheduledDays} day{m.scheduledDays !== 1 ? 's' : ''}</div>
                         <div className="font-semibold">
-                          {m.totalQuantity.toLocaleString()} / {m.availableCapacity.toLocaleString()} available
+                          Avg {m.avgPerDay.toLocaleString()}/day · Cap {m.availableCapacity.toLocaleString()}/day
                         </div>
                       </div>
                       <div className="w-full bg-slate-200 rounded-full h-2 mt-3">
@@ -1530,11 +1554,12 @@ export default function App() {
               {MACHINES.map(machine => {
                 const machineActiveOrders = active.filter(o => o.machineId === machine.id && o.planningDate);
                 const totalScheduled = machineActiveOrders.reduce((sum, o) => sum + (parseInt(String(o.quantity||'0').replace(/,/g,''))||0), 0);
-                const utilPct = Math.round((totalScheduled / machine.availableCapacity) * 100);
+                const scheduledDays = new Set(machineActiveOrders.map(o => o.planningDate)).size;
+                const avgPerDay = scheduledDays > 0 ? totalScheduled / scheduledDays : 0;
+                const utilPct = Math.round((avgPerDay / machine.availableCapacity) * 100);
                 const stockReserved = Math.round(machine.capacity * (machine.stockPercentage / 100));
                 const isOver = utilPct > 105;
                 const isNear = utilPct >= 90 && utilPct <= 105;
-                const scheduledDays = new Set(machineActiveOrders.map(o => o.planningDate)).size;
                 return (
                   <div key={machine.id} className={`rounded-xl p-4 border-2 ${
                     isOver ? 'bg-red-50 border-red-400' :
@@ -1556,8 +1581,8 @@ export default function App() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
-                        <div className="text-slate-400 mb-0.5">Scheduled</div>
-                        <div className="font-bold text-slate-800">{totalScheduled.toLocaleString()}</div>
+                        <div className="text-slate-400 mb-0.5">Avg/Day</div>
+                        <div className="font-bold text-slate-800">{Math.round(avgPerDay).toLocaleString()}</div>
                       </div>
                       <div className="bg-white rounded-lg p-2 border border-slate-100">
                         <div className="text-slate-400 mb-0.5">Available</div>
