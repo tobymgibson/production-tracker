@@ -511,15 +511,20 @@ export default function App() {
         }, 0) / ordersWithDates.length
       : 0;
 
-    // Machine utilization
+    // Machine utilisation (future/today orders only)
+    const todayStr = new Date().toISOString().split('T')[0];
     const machineUtil = MACHINES.map(machine => {
-      const machineOrders = active.filter(o => o.machineId === machine.id && o.planningDate);
+      const machineOrders = active.filter(o => 
+        o.machineId === machine.id && 
+        o.planningDate &&
+        o.planningDate >= todayStr // Only today or future
+      );
       const totalQty = machineOrders.reduce((sum, o) => {
         const qty = parseInt(String(o.quantity || '0').replace(/,/g, '')) || 0;
         return sum + qty;
       }, 0);
       
-      // Count unique planning dates to get actual days utilization
+      // Count unique planning dates to get actual days utilisation
       const uniqueDates = new Set(machineOrders.map(o => o.planningDate)).size;
       const avgPerDay = uniqueDates > 0 ? totalQty / uniqueDates : 0;
       
@@ -531,7 +536,7 @@ export default function App() {
         scheduledDays: uniqueDates,
         avgPerDay: Math.round(avgPerDay),
         availableCapacity: machine.availableCapacity,
-        utilizationPercent: Math.round((avgPerDay / machine.availableCapacity) * 100)
+        utilisationPercent: Math.round((avgPerDay / machine.availableCapacity) * 100)
       };
     });
 
@@ -1502,13 +1507,13 @@ export default function App() {
               )}
             </div>
 
-            {/* Machine Utilization */}
+            {/* Machine Utilisation */}
             <div className="bg-white rounded-lg border border-slate-200 p-5">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilization (All Orders)</h3>
+              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-4">Machine Utilisation (All Orders)</h3>
               <div className="grid grid-cols-2 gap-4">
                 {analytics.machineUtil.map(m => {
-                  const utilizationColor = m.utilizationPercent >= 100 ? 'text-red-600' : 
-                                          m.utilizationPercent >= 90 ? 'text-orange-600' : 
+                  const utilisationColor = m.utilisationPercent >= 100 ? 'text-red-600' : 
+                                          m.utilisationPercent >= 90 ? 'text-orange-600' : 
                                           'text-slate-900';
                   return (
                     <div key={m.machine} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
@@ -1517,8 +1522,8 @@ export default function App() {
                           <div className="font-bold text-lg text-slate-900">{m.machine}</div>
                           <div className="text-xs text-slate-500">{m.fullName}</div>
                         </div>
-                        <div className={`text-2xl font-bold ${utilizationColor}`}>
-                          {m.utilizationPercent}%
+                        <div className={`text-2xl font-bold ${utilisationColor}`}>
+                          {m.utilisationPercent}%
                         </div>
                       </div>
                       <div className="text-sm text-slate-600 mt-2 space-y-1">
@@ -1530,11 +1535,11 @@ export default function App() {
                       <div className="w-full bg-slate-200 rounded-full h-2 mt-3">
                         <div 
                           className={`h-2 rounded-full transition-all ${
-                            m.utilizationPercent >= 100 ? 'bg-red-600' : 
-                            m.utilizationPercent >= 90 ? 'bg-orange-500' : 
+                            m.utilisationPercent >= 100 ? 'bg-red-600' : 
+                            m.utilisationPercent >= 90 ? 'bg-orange-500' : 
                             'bg-blue-500'
                           }`}
-                          style={{ width: `${Math.min(m.utilizationPercent, 100)}%` }}
+                          style={{ width: `${Math.min(m.utilisationPercent, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -1552,7 +1557,8 @@ export default function App() {
             {/* TOP SUMMARY STRIP - at-a-glance for all machines */}
             <div className="grid grid-cols-4 gap-3">
               {MACHINES.map(machine => {
-                const machineActiveOrders = active.filter(o => o.machineId === machine.id && o.planningDate);
+                const todayStr = new Date().toISOString().split('T')[0];
+                const machineActiveOrders = active.filter(o => o.machineId === machine.id && o.planningDate && o.planningDate >= todayStr);
                 const totalScheduled = machineActiveOrders.reduce((sum, o) => sum + (parseInt(String(o.quantity||'0').replace(/,/g,''))||0), 0);
                 const scheduledDays = new Set(machineActiveOrders.map(o => o.planningDate)).size;
                 const avgPerDay = scheduledDays > 0 ? totalScheduled / scheduledDays : 0;
