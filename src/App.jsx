@@ -329,15 +329,30 @@ export default function App() {
   const toggleVal = async (id, key) => {
     const order = orders.find(o => o.id === id);
     if (order) {
+      const updatedValidations = {
+        ...order.validations,
+        [key]: !order.validations[key]
+      };
+      
+      // Check if all required validations are complete (excluding Kick Off Meeting Required)
+      const requiredValidations = VALIDATIONS.filter(v => v !== 'Kick Off Meeting Required');
+      const allRequiredComplete = requiredValidations.every(v => {
+        const validationKey = v.toLowerCase().replace(/\s+/g, '');
+        return updatedValidations[validationKey] === true;
+      });
+      
+      // Auto-complete if all required validations are checked
       const updatedOrder = {
         ...order,
-        validations: {
-          ...order.validations,
-          [key]: !order.validations[key]
-        }
+        validations: updatedValidations,
+        status: allRequiredComplete ? 'Complete' : order.status
       };
+      
       try {
         await firebaseService.saveOrder(updatedOrder);
+        if (allRequiredComplete && order.status !== 'Complete') {
+          showToast(`Order auto-completed: ${order.customer}`, 'success');
+        }
         // State updates automatically via Firebase subscription
       } catch (error) {
         console.error('Error toggling validation:', error);
