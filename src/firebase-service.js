@@ -1,22 +1,30 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut as fbSignOut,
+  onAuthStateChanged as fbOnAuthStateChanged,
+} from 'firebase/auth';
 import { FIREBASE_CONFIG, COLLECTIONS } from './firebase-config.js';
-
+ 
 // Initialize Firebase
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
-
+const auth = getAuth(app);
+ 
 class FirebaseService {
   constructor() {
     this.db = db;
+    this.auth = auth;
     this.unsubscribeOrders = null;
     this.unsubscribeMachines = null;
   }
-
+ 
   // ============================================
   // ORDERS - Real-time sync
   // ============================================
-
+ 
   /**
    * Subscribe to real-time order updates
    * Calls callback whenever orders change
@@ -24,7 +32,7 @@ class FirebaseService {
   subscribeToOrders(callback) {
     const ordersRef = collection(this.db, COLLECTIONS.orders);
     const q = query(ordersRef, orderBy('created', 'desc'));
-    
+ 
     this.unsubscribeOrders = onSnapshot(q, (snapshot) => {
       const orders = [];
       snapshot.forEach((doc) => {
@@ -33,16 +41,16 @@ class FirebaseService {
           ...doc.data()
         });
       });
-      
+ 
       console.log(`🔥 Firebase: Loaded ${orders.length} orders`);
       callback(orders);
     }, (error) => {
       console.error('Error subscribing to orders:', error);
     });
-    
+ 
     return this.unsubscribeOrders;
   }
-
+ 
   /**
    * Stop listening to order updates
    */
@@ -52,7 +60,7 @@ class FirebaseService {
       this.unsubscribeOrders = null;
     }
   }
-
+ 
   /**
    * Save or update an order
    */
@@ -63,7 +71,7 @@ class FirebaseService {
         ...order,
         updated: new Date().toISOString()
       }, { merge: true });
-      
+ 
       console.log(`✅ Saved order: ${order.id}`);
       return true;
     } catch (error) {
@@ -71,17 +79,17 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Save multiple orders (batch)
    */
   async saveOrders(orders) {
     try {
       console.log(`💾 Saving ${orders.length} orders to Firebase...`);
-      
+ 
       const promises = orders.map(order => this.saveOrder(order));
       await Promise.all(promises);
-      
+ 
       console.log(`✅ Saved ${orders.length} orders to Firebase`);
       return true;
     } catch (error) {
@@ -89,7 +97,7 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Delete an order
    */
@@ -103,7 +111,7 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Get all orders (one-time fetch, not real-time)
    */
@@ -111,7 +119,7 @@ class FirebaseService {
     try {
       const ordersRef = collection(this.db, COLLECTIONS.orders);
       const snapshot = await getDocs(ordersRef);
-      
+ 
       const orders = [];
       snapshot.forEach((doc) => {
         orders.push({
@@ -119,7 +127,7 @@ class FirebaseService {
           ...doc.data()
         });
       });
-      
+ 
       console.log(`📊 Fetched ${orders.length} orders from Firebase`);
       return orders;
     } catch (error) {
@@ -127,17 +135,17 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   // ============================================
   // MACHINES - Real-time sync
   // ============================================
-
+ 
   /**
    * Subscribe to real-time machine updates
    */
   subscribeToMachines(callback) {
     const machinesRef = collection(this.db, COLLECTIONS.machines);
-    
+ 
     this.unsubscribeMachines = onSnapshot(machinesRef, (snapshot) => {
       const machines = [];
       snapshot.forEach((doc) => {
@@ -146,19 +154,19 @@ class FirebaseService {
           ...doc.data()
         });
       });
-      
+ 
       // Sort by id
       machines.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      
+ 
       console.log(`🔥 Firebase: Loaded ${machines.length} machines`);
       callback(machines);
     }, (error) => {
       console.error('Error subscribing to machines:', error);
     });
-    
+ 
     return this.unsubscribeMachines;
   }
-
+ 
   /**
    * Stop listening to machine updates
    */
@@ -168,7 +176,7 @@ class FirebaseService {
       this.unsubscribeMachines = null;
     }
   }
-
+ 
   /**
    * Save machine configuration
    */
@@ -176,7 +184,7 @@ class FirebaseService {
     try {
       const machineRef = doc(this.db, COLLECTIONS.machines, String(machine.id));
       await setDoc(machineRef, machine, { merge: true });
-      
+ 
       console.log(`✅ Saved machine: ${machine.name}`);
       return true;
     } catch (error) {
@@ -184,50 +192,50 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Initialize default machines (run once)
    */
   async initializeDefaultMachines() {
     const defaultMachines = [
-      { 
-        id: 1, 
-        name: 'KO1', 
+      {
+        id: 1,
+        name: 'KO1',
         fullName: 'Klett 1',
-        capacity: 50000, 
+        capacity: 50000,
         stockPercentage: 57,
         availableCapacity: 21500,
-        avgSetupTime: 2 
+        avgSetupTime: 2
       },
-      { 
-        id: 2, 
-        name: 'KO3', 
+      {
+        id: 2,
+        name: 'KO3',
         fullName: 'Klett 3',
-        capacity: 17500, 
+        capacity: 17500,
         stockPercentage: 22,
         availableCapacity: 13650,
-        avgSetupTime: 1.5 
+        avgSetupTime: 1.5
       },
-      { 
-        id: 3, 
-        name: 'BO1', 
+      {
+        id: 3,
+        name: 'BO1',
         fullName: 'Century',
-        capacity: 24000, 
+        capacity: 24000,
         stockPercentage: 45,
         availableCapacity: 13200,
-        avgSetupTime: 1.5 
+        avgSetupTime: 1.5
       },
-      { 
-        id: 4, 
-        name: 'JC1', 
+      {
+        id: 4,
+        name: 'JC1',
         fullName: 'Jinchang',
-        capacity: 48000, 
+        capacity: 48000,
         stockPercentage: 49,
         availableCapacity: 24480,
-        avgSetupTime: 2 
+        avgSetupTime: 2
       }
     ];
-
+ 
     try {
       for (const machine of defaultMachines) {
         await this.saveMachine(machine);
@@ -239,7 +247,7 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Get all machines (one-time fetch)
    */
@@ -247,7 +255,7 @@ class FirebaseService {
     try {
       const machinesRef = collection(this.db, COLLECTIONS.machines);
       const snapshot = await getDocs(machinesRef);
-      
+ 
       const machines = [];
       snapshot.forEach((doc) => {
         machines.push({
@@ -255,10 +263,10 @@ class FirebaseService {
           ...doc.data()
         });
       });
-      
+ 
       // Sort by id
       machines.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      
+ 
       console.log(`📊 Fetched ${machines.length} machines from Firebase`);
       return machines;
     } catch (error) {
@@ -266,11 +274,11 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   // ============================================
   // UTILITIES
   // ============================================
-
+ 
   /**
    * Clear all orders (use carefully!)
    */
@@ -278,12 +286,12 @@ class FirebaseService {
     try {
       const ordersRef = collection(this.db, COLLECTIONS.orders);
       const snapshot = await getDocs(ordersRef);
-      
+ 
       const deletePromises = [];
       snapshot.forEach((doc) => {
         deletePromises.push(deleteDoc(doc.ref));
       });
-      
+ 
       await Promise.all(deletePromises);
       console.log(`🗑️ Deleted ${snapshot.size} orders`);
       return true;
@@ -292,14 +300,14 @@ class FirebaseService {
       throw error;
     }
   }
-
+ 
   /**
    * Import orders from Google Sheets data
    */
   async importFromGoogleSheets(googleSheetsOrders) {
     try {
       console.log(`📥 Importing ${googleSheetsOrders.length} orders from Google Sheets...`);
-      
+ 
       for (const order of googleSheetsOrders) {
         // Ensure order has an ID
         if (!order.id) {
@@ -307,7 +315,7 @@ class FirebaseService {
         }
         await this.saveOrder(order);
       }
-      
+ 
       console.log(`✅ Imported ${googleSheetsOrders.length} orders to Firebase`);
       return true;
     } catch (error) {
@@ -315,7 +323,38 @@ class FirebaseService {
       throw error;
     }
   }
+ 
+  // ============================================
+  // AUTH
+  // ============================================
+ 
+  /**
+   * Subscribe to auth state changes.
+   * Returns an unsubscribe function.
+   * Callback receives the firebase User object, or null if signed out.
+   */
+  onAuthStateChanged(callback) {
+    return fbOnAuthStateChanged(this.auth, callback);
+  }
+ 
+  /**
+   * Sign in with email + password.
+   * Throws on failure (e.g. wrong password) — caller should catch.
+   */
+  async signIn(email, password) {
+    const credential = await signInWithEmailAndPassword(this.auth, email, password);
+    console.log(`🔐 Signed in as: ${credential.user.email}`);
+    return credential.user;
+  }
+ 
+  /**
+   * Sign out the current user.
+   */
+  async signOut() {
+    await fbSignOut(this.auth);
+    console.log('🔐 Signed out');
+  }
 }
-
+ 
 // Create singleton instance
 export const firebaseService = new FirebaseService();
