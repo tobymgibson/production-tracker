@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import {
   Download, Upload, Eye, EyeOff, AlertTriangle, TrendingUp, Calendar, Package,
   Search, X, Plus, ChevronDown, ChevronUp, CheckCircle2, Clock, AlertCircle, LogOut,
+  Sun, Moon,
 } from 'lucide-react';
 import { firebaseService } from './firebase-service.js';
 import './app-styles.css';
@@ -190,9 +191,9 @@ const LoginScreen = ({ onSignIn }) => {
           <div style={{
             width: 56, height: 56, background: 'var(--col-yellow)', borderRadius: 16,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 20px', boxShadow: '0 0 40px #f5c84240',
+            margin: '0 auto 20px', boxShadow: '0 0 40px rgb(var(--rgb-yellow) / 0.25)',
           }}>
-            <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 18, color: '#0c0e12' }}>PT</span>
+            <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 18, color: '#1a1815' }}>PT</span>
           </div>
           <h1 style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 26, color: 'var(--col-text)', letterSpacing: '-0.02em' }}>Production Tracker</h1>
           <p style={{ color: 'var(--col-muted)', fontSize: 13, marginTop: 4 }}>Weedon Corrugated Products</p>
@@ -237,7 +238,7 @@ const LoginScreen = ({ onSignIn }) => {
             </div>
           </div>
           {error && (
-            <div style={{ background: '#f8717110', border: '1px solid #f8717140', borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 13, color: 'var(--col-red)' }}>
+            <div style={{ background: 'rgb(var(--rgb-red) / 0.08)', border: '1px solid rgb(var(--rgb-red) / 0.25)', borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 13, color: 'var(--col-red)' }}>
               {error}
             </div>
           )}
@@ -313,6 +314,27 @@ const ImportModal = ({ onClose, onImport }) => {
 export default function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch { /* ignore */ }
+    return 'light';
+  });
+
+  // Apply theme to <html> before paint to avoid flashing
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (err) {
+      console.error('Failed to save theme preference:', err);
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(t => t === 'light' ? 'dark' : 'light');
+  }, []);
   const [orders, setOrders] = useState([]);
   const [view, setView] = useState('dashboard');
   const [filterMachine, setFilterMachine] = useState('All');
@@ -722,12 +744,12 @@ export default function App() {
           borderBottom: '1px solid var(--col-border)',
           position: 'sticky', top: 0, zIndex: 50,
         }}>
-          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
               {/* Brand */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 34, height: 34, background: 'var(--col-yellow)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 12, color: '#0c0e12' }}>PT</span>
+                  <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 12, color: '#1a1815' }}>PT</span>
                 </div>
                 <div>
                   <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--col-text)', lineHeight: 1.2 }}>Production Tracker</div>
@@ -757,13 +779,21 @@ export default function App() {
                 <button className="btn btn-ghost" onClick={() => setShowImportModal(true)}><Upload size={14} />Import</button>
                 <button className="btn btn-ghost" onClick={exportData}><Download size={14} />Export</button>
                 <button className="btn btn-danger" onClick={() => setShowClearModal(true)} aria-label="Clear all orders"><X size={14} /></button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={toggleTheme}
+                  aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                  title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                >
+                  {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+                </button>
                 <button className="btn btn-ghost" onClick={handleSignOut} aria-label="Sign out"><LogOut size={14} /></button>
               </div>
             </div>
           </div>
 
           {/* Nav tabs */}
-          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 24px 0', display: 'flex', gap: 4, paddingBottom: 10, paddingTop: 2, overflowX: 'auto' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 0', display: 'flex', gap: 4, paddingBottom: 10, paddingTop: 2, overflowX: 'auto' }}>
             {[
               { id: 'dashboard',     label: 'Dashboard',  icon: TrendingUp },
               { id: 'active',        label: 'Active',     count: active.length },
@@ -787,7 +817,7 @@ export default function App() {
         </header>
 
         {/* ── CONTENT ── */}
-        <main style={{ maxWidth: 1440, margin: '0 auto', padding: '24px 24px 64px' }}>
+        <main style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 24px 64px' }}>
 
           {/* ══════════ NEW ORDER ══════════ */}
           {view === 'neworder' && newOrder && (
@@ -849,13 +879,13 @@ export default function App() {
                     {capacityWarning && (
                       <div style={{
                         marginTop: 16,
-                        border: `1.5px solid ${capacityWarning.isOver ? '#f8717140' : capacityWarning.isNear ? '#fb923c40' : '#34d39940'}`,
+                        border: `1.5px solid ${capacityWarning.isOver ? 'rgb(var(--rgb-red) / 0.25)' : capacityWarning.isNear ? 'rgb(var(--rgb-orange) / 0.25)' : 'rgb(var(--rgb-green) / 0.25)'}`,
                         borderRadius: 10,
                         overflow: 'hidden',
                       }}>
                         <div style={{
                           padding: '10px 16px',
-                          background: capacityWarning.isOver ? '#f8717115' : capacityWarning.isNear ? '#fb923c12' : '#34d39912',
+                          background: capacityWarning.isOver ? 'rgb(var(--rgb-red) / 0.10)' : capacityWarning.isNear ? 'rgb(var(--rgb-orange) / 0.08)' : 'rgb(var(--rgb-green) / 0.10)',
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         }}>
                           <span style={{ fontWeight: 700, fontSize: 13, color: capacityWarning.isOver ? 'var(--col-red)' : capacityWarning.isNear ? 'var(--col-orange)' : 'var(--col-green)' }}>
@@ -877,7 +907,7 @@ export default function App() {
                             }}>
                               {(capacityWarning.newQty / capacityWarning.avail) * 100 > 10 && 'New'}
                             </div>
-                            {!capacityWarning.isOver && <div style={{ flex: 1, background: '#34d39930' }} />}
+                            {!capacityWarning.isOver && <div style={{ flex: 1, background: 'rgb(var(--rgb-green) / 0.20)' }} />}
                           </div>
                           <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--col-muted)', flexWrap: 'wrap' }}>
                             <span>Existing: <b style={{ color: 'var(--col-text)' }}>{fmtNum(capacityWarning.existingQty)}</b></span>
@@ -950,7 +980,7 @@ export default function App() {
               </div>
 
               {(analytics.overCapacityDays > 0 || analytics.bottlenecks.length > 0 || analytics.kickOffRequired?.length > 0) && (
-                <div style={{ background: '#f8717108', border: '1px solid #f8717130', borderRadius: 12, padding: 20 }}>
+                <div style={{ background: 'rgb(var(--rgb-red) / 0.04)', border: '1px solid rgb(var(--rgb-red) / 0.20)', borderRadius: 12, padding: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                     <AlertTriangle size={18} color="var(--col-red)" />
                     <span style={{ fontFamily: 'Syne,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--col-red)' }}>Production Alerts</span>
@@ -992,8 +1022,8 @@ export default function App() {
                         <div key={i} style={{
                           display: 'grid', gridTemplateColumns: '120px 1fr 72px',
                           alignItems: 'center', gap: 16, padding: '12px 16px',
-                          borderRadius: 8, background: f.isOver ? '#f8717108' : f.isNear ? '#fb923c08' : 'var(--col-surface2)',
-                          border: `1px solid ${f.isOver ? '#f8717130' : f.isNear ? '#fb923c30' : 'var(--col-border)'}`,
+                          borderRadius: 8, background: f.isOver ? 'rgb(var(--rgb-red) / 0.04)' : f.isNear ? 'rgb(var(--rgb-orange) / 0.04)' : 'var(--col-surface2)',
+                          border: `1px solid ${f.isOver ? 'rgb(var(--rgb-red) / 0.20)' : f.isNear ? 'rgb(var(--rgb-orange) / 0.20)' : 'var(--col-border)'}`,
                         }}>
                           <div>
                             <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--col-text)' }}>{fmtDate(f.date)}</div>
@@ -1075,7 +1105,7 @@ export default function App() {
                   const over = pct > 105, near = pct >= 90 && !over;
                   const col = over ? 'var(--col-red)' : near ? 'var(--col-orange)' : 'var(--col-blue)';
                   return (
-                    <div key={machine.id} className="card" style={{ padding: 16, border: `1px solid ${over ? '#f8717130' : near ? '#fb923c30' : 'var(--col-border)'}` }}>
+                    <div key={machine.id} className="card" style={{ padding: 16, border: `1px solid ${over ? 'rgb(var(--rgb-red) / 0.20)' : near ? 'rgb(var(--rgb-orange) / 0.20)' : 'var(--col-border)'}` }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                         <div>
                           <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--col-text)' }}>{machine.name}</div>
@@ -1097,7 +1127,7 @@ export default function App() {
                           </div>
                         ))}
                       </div>
-                      <div style={{ marginTop: 8, textAlign: 'center', padding: '4px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: over ? '#f8717115' : near ? '#fb923c12' : '#34d39910', color: col }}>
+                      <div style={{ marginTop: 8, textAlign: 'center', padding: '4px 8px', borderRadius: 6, fontSize: 10, fontWeight: 700, background: over ? 'rgb(var(--rgb-red) / 0.10)' : near ? 'rgb(var(--rgb-orange) / 0.08)' : 'rgb(var(--rgb-green) / 0.08)', color: col }}>
                         {over ? '⚠ OVER CAPACITY' : near ? '⚡ NEAR CAPACITY' : '✓ OK'}
                       </div>
                     </div>
@@ -1150,7 +1180,7 @@ export default function App() {
                   <div key={machine.id} className="card">
                     <div className="machine-header">
                       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ width: 42, height: 42, background: 'var(--col-yellow)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 12, color: '#0c0e12' }}>
+                        <div style={{ width: 42, height: 42, background: 'var(--col-yellow)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 12, color: '#1a1815' }}>
                           {machine.name}
                         </div>
                         <div>
@@ -1177,7 +1207,7 @@ export default function App() {
                         <div key={day.date} className={`day-row${day.isOver ? ' over' : day.isNear ? ' near' : ''}`}>
                           <div style={{ display: 'grid', gridTemplateColumns: '68px 1fr 64px', gap: 16, alignItems: 'center', marginBottom: 14 }}>
                             <div style={{
-                              background: 'var(--col-surface2)', border: `1px solid ${day.isOver ? '#f8717130' : day.isNear ? '#fb923c30' : 'var(--col-border)'}`,
+                              background: 'var(--col-surface2)', border: `1px solid ${day.isOver ? 'rgb(var(--rgb-red) / 0.20)' : day.isNear ? 'rgb(var(--rgb-orange) / 0.20)' : 'var(--col-border)'}`,
                               borderRadius: 8, textAlign: 'center', padding: '8px 4px',
                             }}>
                               <div style={{ fontSize: 9, fontFamily: 'DM Mono,monospace', color: col, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{dd.toLocaleDateString('en-GB', { weekday: 'short' })}</div>
@@ -1193,7 +1223,7 @@ export default function App() {
                                 <div style={{ width: `${nsPct}%`, background: day.isOver ? 'var(--col-red)' : day.isNear ? 'var(--col-orange)' : 'var(--col-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'white', fontWeight: 600 }}>
                                   {nsPct > 8 && fmtNum(day.ns)}
                                 </div>
-                                <div style={{ width: `${remPct}%`, background: '#34d39920', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--col-green)', fontWeight: 600 }}>
+                                <div style={{ width: `${remPct}%`, background: 'rgb(var(--rgb-green) / 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--col-green)', fontWeight: 600 }}>
                                   {remPct > 8 && fmtNum(day.remaining)}
                                 </div>
                               </div>
@@ -1205,14 +1235,14 @@ export default function App() {
                               </div>
                             </div>
 
-                            <div style={{ textAlign: 'center', background: day.isOver ? '#f8717115' : day.isNear ? '#fb923c12' : '#34d39910', borderRadius: 8, padding: '10px 4px' }}>
+                            <div style={{ textAlign: 'center', background: day.isOver ? 'rgb(var(--rgb-red) / 0.10)' : day.isNear ? 'rgb(var(--rgb-orange) / 0.08)' : 'rgb(var(--rgb-green) / 0.08)', borderRadius: 8, padding: '10px 4px' }}>
                               <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 800, fontSize: 20, color: col }}>{day.pct}%</div>
                               <div style={{ fontSize: 9, color: col, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{day.isOver ? 'OVER' : day.isNear ? 'NEAR' : 'OK'}</div>
                             </div>
                           </div>
 
                           {day.isOver && (
-                            <div style={{ marginBottom: 12, padding: '8px 14px', background: '#f8717115', border: '1px solid #f8717130', borderRadius: 6, fontSize: 12, color: 'var(--col-red)', fontWeight: 600 }}>
+                            <div style={{ marginBottom: 12, padding: '8px 14px', background: 'rgb(var(--rgb-red) / 0.10)', border: '1px solid rgb(var(--rgb-red) / 0.20)', borderRadius: 6, fontSize: 12, color: 'var(--col-red)', fontWeight: 600 }}>
                               ⚠ Over capacity by {fmtNum(day.ns - Math.round(day.avail * 1.05))} feeds — consider rescheduling
                             </div>
                           )}
@@ -1254,7 +1284,7 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} className="animate-fade-in">
 
               {view === 'materialneeded' && (
-                <div style={{ background: '#f5c84210', border: '1px solid #f5c84240', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ background: 'rgb(var(--rgb-yellow) / 0.10)', border: '1px solid rgb(var(--rgb-yellow) / 0.25)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
                   <span style={{ fontSize: 28 }}>📦</span>
                   <div>
                     <div style={{ fontFamily: 'Syne,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--col-yellow)' }}>Material Purchasing Queue</div>
@@ -1466,7 +1496,7 @@ export default function App() {
         <div className="modal-overlay" onClick={() => setShowClearModal(false)}>
           <div className="card" style={{ maxWidth: 480, width: '100%', padding: 32 }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div style={{ background: '#f8717118', border: '1px solid #f8717130', borderRadius: 10, padding: 10 }}>
+              <div style={{ background: 'rgb(var(--rgb-red) / 0.12)', border: '1px solid rgb(var(--rgb-red) / 0.20)', borderRadius: 10, padding: 10 }}>
                 <AlertTriangle size={24} color="var(--col-red)" />
               </div>
               <div>
@@ -1475,7 +1505,7 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ background: '#f8717108', border: '1px solid #f8717130', borderRadius: 8, padding: 16, marginBottom: 20, fontSize: 13 }}>
+            <div style={{ background: 'rgb(var(--rgb-red) / 0.04)', border: '1px solid rgb(var(--rgb-red) / 0.20)', borderRadius: 8, padding: 16, marginBottom: 20, fontSize: 13 }}>
               <div style={{ fontWeight: 600, color: 'var(--col-text)', marginBottom: 8 }}>You are about to permanently delete:</div>
               <div style={{ color: 'var(--col-muted)', lineHeight: 1.8 }}>
                 · <b style={{ color: 'var(--col-text)' }}>{orders.length}</b> total orders<br />
